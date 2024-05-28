@@ -3,8 +3,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const { DIFY_API_KEY } = process.env;
-const BASE_URL = `https://api.dify.ai/v1`;
+const { DIFY_API_KEY, DIFY_BASE_URL } = process.env;
+const BASE_URL = DIFY_BASE_URL || `https://api.dify.ai/v1`;
 
 const AxiosInstanceDify = axios.create({
   baseURL: BASE_URL,
