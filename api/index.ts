@@ -1,9 +1,29 @@
-const express = require("express");
+import express from "express";
+import morgan from "morgan";
+import dotenv from "dotenv";
+import bodyParser from "body-parser";
+import webhookRoutes from './webhook';
+
+// Load environment variables from .env file
+dotenv.config();
+
+const port = 5007;
+const { NODE_ENV } = process.env;
+
 const app = express();
-const port = 5007
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 
-app.get("/", (req, res) => res.send("Express on Vercel 2"));
+if (NODE_ENV === "development") {
+  app.use(morgan("dev"));
+} else {
+  app.use(morgan("common"));
+}
+
+app.get("/", (req, res) => res.send("Whatsapp Chatbot Connector"));
+
+app.use('/webhook', webhookRoutes)
 
 app.listen(port, () => console.log(`Server ready on port ${port}.`));
 
