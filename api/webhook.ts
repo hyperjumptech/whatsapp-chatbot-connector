@@ -1,14 +1,17 @@
 import express from "express";
 import dotenv from "dotenv";
-import { markChatAsRead, sendChat } from "../services/whatsapp";
-import { sendQuery } from "../services/dify";
-import { getUserSession, setUserSession } from "../services/session";
+import { markChatAsRead, sendChatbotReply } from "../services/whatsapp";
+import { queryToDify } from "../services/dify";
+import { queryToRasa } from "../services/rasa";
 
 dotenv.config();
 
 const webhookRoutes = express.Router();
 
-const { WEBHOOK_VERIFY_TOKEN } = process.env;
+const { WEBHOOK_VERIFY_TOKEN, CONNECTION_PLATFORM } = process.env;
+console.log("CONNECTION_PLATFORM: ", CONNECTION_PLATFORM);
+const DIFY = "dify";
+const RASA = "rasa";
 
 // accepts GET requests at the /webhook endpoint. You need this URL to setup webhook initially.
 // info on verification request payload: https://developers.facebook.com/docs/graph-api/webhooks/getting-started#verification-requests
@@ -35,28 +38,43 @@ webhookRoutes.post("/", async (req, res) => {
   // check if the webhook request contains a message
   // details on WhatsApp text message payload: https://developers.facebook.com/docs/whatsapp/cloud-api/webhooks/payload-examples#text-messages
   const message = req.body.entry?.[0]?.changes[0]?.value?.messages?.[0];
-  const waId = req.body.entry?.[0]?.changes[0]?.value?.contacts?.[0]?.wa_id;
 
   // check if the incoming message contains text
-  if (message?.type === "text") {
-    const user = getUserSession(waId);
-
-    const difyRes = await sendQuery({
-      userId: waId,
-      conversationId: user?.conversationId || "",
-      query: message.text.body,
-    });
-
-    if (!user) {
-      setUserSession({
-        id: waId,
-        conversationId: difyRes.data.conversation_id,
-      });
-    }
-
-    await sendChat({ to: message.from, text: difyRes.data.answer });
-    await markChatAsRead(message.id);
+  if (!message?.type) {
+    res.sendStatus(200);
+    return;
   }
+
+  let chatbotReply = null;
+  let queryText = "";
+
+  switch (message.type) {
+    case "interactive":
+      if (message.interactive.type === "button_reply") {
+        queryText = message.interactive.button_reply.id;
+      } else if (message.interactive.type === "list_reply") {
+        queryText = message.interactive.list_reply.id;
+      }
+      break;
+    default:
+      queryText = message.text.body;
+      break;
+  }
+
+  if (CONNECTION_PLATFORM === DIFY) {
+    chatbotReply = await queryToDify({ req, query: queryText });
+  } else if (CONNECTION_PLATFORM === RASA) {
+    chatbotReply = await queryToRasa({ req, query: queryText });
+  }
+  console.log("Chatbot Reply:\n", chatbotReply);
+
+  if (!chatbotReply) {
+    res.sendStatus(200);
+    return;
+  }
+
+  await sendChatbotReply({ to: message.from, chatbotReply });
+  await markChatAsRead(message.id);
 
   res.sendStatus(200);
 });

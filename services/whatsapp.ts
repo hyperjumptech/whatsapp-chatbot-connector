@@ -12,7 +12,46 @@ const AxiosInstanceWhatsapp = axios.create({
   timeoutErrorMessage: "Connection timed out",
 });
 
-export const sendChat = async ({ to, text }: { to: string; text: string }) => {
+export const sendChatbotReply = async ({
+  to,
+  chatbotReply,
+}: {
+  to: string;
+  chatbotReply: {
+    text: string;
+    type?: string;
+    buttons?: { type: "reply"; reply: { id: string; title: string } }[];
+    rows?: { id: string; title: string; description: string }[];
+  };
+}) => {
+  switch (chatbotReply?.type) {
+    case "interactive-button":
+      await sendInteractiveReplyButton({
+        to,
+        text: chatbotReply.text,
+        buttons: chatbotReply.buttons,
+      });
+      break;
+    case "interactive-list":
+      await sendInteractiveListMessage({
+        to,
+        text: chatbotReply.text,
+        rows: chatbotReply.rows,
+      });
+      break;
+    default:
+      await sendTextMessage({ to, text: chatbotReply.text });
+      break;
+  }
+};
+
+export const sendTextMessage = async ({
+  to,
+  text,
+}: {
+  to: string;
+  text: string;
+}) => {
   try {
     return await AxiosInstanceWhatsapp({
       method: "POST",
@@ -23,7 +62,94 @@ export const sendChat = async ({ to, text }: { to: string; text: string }) => {
       data: {
         messaging_product: "whatsapp",
         to,
-        text: { body: text },
+        type: "text",
+        text: { preview_url: true, body: text },
+      },
+    });
+  } catch (error) {
+    console.error(
+      `Cannot send WhatsApp message, got: ${JSON.stringify(
+        error?.response?.data || error
+      )}`
+    );
+  }
+};
+
+export const sendInteractiveReplyButton = async ({
+  to,
+  text,
+  buttons,
+}: {
+  to: string;
+  text: string;
+  buttons: {
+    type: "reply";
+    reply: {
+      id: string;
+      title: string;
+    };
+  }[];
+}) => {
+  try {
+    return await AxiosInstanceWhatsapp({
+      method: "POST",
+      url: `${BASE_URL}/messages`,
+      headers: {
+        Authorization: `Bearer ${GRAPH_API_TOKEN}`,
+      },
+      data: {
+        messaging_product: "whatsapp",
+        to,
+        type: "interactive",
+        interactive: {
+          type: "button",
+          header: { type: "text", text: "" },
+          body: { text },
+          footer: { text: "" },
+          action: { buttons },
+        },
+      },
+    });
+  } catch (error) {
+    console.error(
+      `Cannot send WhatsApp message, got: ${JSON.stringify(
+        error?.response?.data || error
+      )}`
+    );
+  }
+};
+
+export const sendInteractiveListMessage = async ({
+  to,
+  text,
+  rows,
+}: {
+  to: string;
+  text: string;
+  rows: {
+    id: string;
+    title: string;
+    description: string;
+  }[];
+}) => {
+  try {
+    return await AxiosInstanceWhatsapp({
+      method: "POST",
+      url: `${BASE_URL}/messages`,
+      headers: {
+        Authorization: `Bearer ${GRAPH_API_TOKEN}`,
+      },
+      data: {
+        messaging_product: "whatsapp",
+        to,
+        type: "interactive",
+        interactive: {
+          type: "list",
+          header: { type: "text", text: "" },
+          body: { text },
+          footer: { text: "" },
+          action: { sections: [{ title: "", rows }], button: "Menu" },
+        },
       },
     });
   } catch (error) {
