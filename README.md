@@ -74,6 +74,9 @@ Now just use your WhatsApp app to send a text message to the WhatsApp Business n
 ![configuration](./whatsapp-configuration.png)
 ![api setup](./whatsap-api-setup.png)
 
+## Deployment
+
+You can deploy this app to any server that runs Node.js. The easiest one is to use Vercel. Just clone this repo and connect it from Vercel Dashboard then you are good to go.
 
 ## License
 This project is licensed under the MIT License. See the LICENSE file for details.
