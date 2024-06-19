@@ -1,7 +1,5 @@
 {
   "name": "whatsapp-chatbot-connector",
-  "type": "module",
-  "main": "index.ts",
   "version": "1.0.0",
   "description": "",
   "scripts": {
