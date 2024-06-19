@@ -9,7 +9,7 @@ COPY package*.json .
 FROM base AS dependencies
 # Copy the rest of the application files to the container
 # Install project dependencies
-RUN npm install --omit=dev --prefer-offline
+RUN npm ci
 COPY . .
 RUN npm run build
 
@@ -25,8 +25,19 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 # Tell docker that all future commands should run as the appuser user
 USER appuser
 
+ENV NODE_ENV production
+ENV WEBHOOK_VERIFY_TOKEN abcdefghijkl 
+ENV GRAPH_API_TOKEN EEAAAT1234567890ABCDEFGHIJKLMNOPQRSTUVWXQY
+ENV BUSINESS_PHONE_NUMBER_ID 1081234567890
+
+ENV DIFY_BASE_URL http://api.dify.ai/v1
+ENV DIFY_API_KEY app-abcdefghijkl1234567890
+
+ENV CONNECTION_PLATFORM=rasa
+
+
 EXPOSE 5007
 ENV PORT 5007
 
 # Set the default command to run the application
-CMD ["npm", "start"]
+CMD ["node", "dist/index.js"]
