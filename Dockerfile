@@ -29,4 +29,4 @@ EXPOSE 5007
 ENV PORT 5007
 
 # Set the default command to run the application
-CMD ["node", "dist/index.js"]
+CMD ["npm", "run" "start"]
