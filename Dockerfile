@@ -9,7 +9,7 @@ COPY package*.json .
 FROM base AS dependencies
 # Copy the rest of the application files to the container
 # Install project dependencies
-RUN npm install --production --prefer-offline
+RUN npm install --omit=dev --prefer-offline
 COPY . .
 RUN npm run build
 
@@ -17,7 +17,7 @@ RUN npm run build
 FROM node:22-alpine AS release
 
 WORKDIR /app
-COPY --from=build /app/dist ./dist
+COPY --from=dependencies /app/dist ./dist
 COPY --from=dependencies /app/node_modules ./node_modules
 
 # Create a group and user
