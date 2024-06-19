@@ -4,8 +4,9 @@
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "ts-node api/index.ts",
-    "build": "tsc api/index.ts",
+    "dev": "ts-node index.ts",
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc",
     "start": "node dist/index.js"
   },
   "keywords": [],

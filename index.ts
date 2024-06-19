@@ -3,7 +3,7 @@ import morgan from "morgan";
 import dotenv from "dotenv";
 import bodyParser from "body-parser";
 
-import webhookRoutes from "./webhook";
+import webhookRoutes from "./api/webhook";
 
 // Load environment variables from .env file
 dotenv.config();
