@@ -66,7 +66,7 @@ export const sendTextMessage = async ({
         text: { preview_url: true, body: text },
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error(
       `Cannot send WhatsApp message, got: ${JSON.stringify(
         error?.response?.data || error
@@ -82,7 +82,7 @@ export const sendInteractiveReplyButton = async ({
 }: {
   to: string;
   text: string;
-  buttons: {
+  buttons?: {
     type: "reply";
     reply: {
       id: string;
@@ -110,7 +110,7 @@ export const sendInteractiveReplyButton = async ({
         },
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error(
       `Cannot send WhatsApp message, got: ${JSON.stringify(
         error?.response?.data || error
@@ -126,7 +126,7 @@ export const sendInteractiveListMessage = async ({
 }: {
   to: string;
   text: string;
-  rows: {
+  rows?: {
     id: string;
     title: string;
     description: string;
@@ -152,7 +152,7 @@ export const sendInteractiveListMessage = async ({
         },
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error(
       `Cannot send WhatsApp message, got: ${JSON.stringify(
         error?.response?.data || error

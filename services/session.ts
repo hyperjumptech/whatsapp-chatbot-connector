@@ -1,8 +1,9 @@
 // TODO: save users session in redis or database
-var users = [];
+type UserType = { id: string; conversationId: string };
+var users: UserType[] = [];
 
 // Function to set user data in the session
-export function setUserSession(user: { [key: string]: string }) {
+export function setUserSession(user: UserType) {
   users.push(user);
   return;
 }
