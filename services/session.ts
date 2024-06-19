@@ -1,6 +1,6 @@
 // TODO: save users session in redis or database
 type UserType = { id: string; conversationId: string };
-var users: UserType[] = [];
+const users: UserType[] = [];
 
 // Function to set user data in the session
 export function setUserSession(user: UserType) {
