@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -66,10 +66,10 @@ export const sendTextMessage = async ({
         text: { preview_url: true, body: text },
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(
       `Cannot send WhatsApp message, got: ${JSON.stringify(
-        error?.response?.data || error
+        (error as AxiosError)?.response?.data || error
       )}`
     );
   }
@@ -110,10 +110,10 @@ export const sendInteractiveReplyButton = async ({
         },
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(
       `Cannot send WhatsApp message, got: ${JSON.stringify(
-        error?.response?.data || error
+        (error as AxiosError)?.response?.data || error
       )}`
     );
   }
@@ -152,10 +152,10 @@ export const sendInteractiveListMessage = async ({
         },
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(
       `Cannot send WhatsApp message, got: ${JSON.stringify(
-        error?.response?.data || error
+        (error as AxiosError)?.response?.data || error
       )}`
     );
   }

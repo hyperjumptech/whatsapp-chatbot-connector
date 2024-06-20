@@ -1,7 +1,5 @@
-### macOS ###
-# General
+# macOS General
 .DS_Store
-
 
 # Dependency directories
 node_modules/
@@ -9,4 +7,8 @@ node_modules/
 # dotenv environment variable files
 .env
 
+# build folder
 dist
+
+# test
+coverage
