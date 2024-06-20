@@ -58,6 +58,4 @@ jobs:
           docker save wa-connector:latest | ssh target docker load  
           ssh target docker stop wa-connector || true
           ssh target docker rm wa-connector || true        
-          ssh target docker run -d --name wa-connector -p ${{ env.PORTS }} -e NODE_ENV -e WEBHOOK_VERIFY -e GRAPH_API_TOKEN -e BUSINESS_PHONE_NUMBER_ID -e DIFY_BASE_URL -e DIFY_API_KEY -e RASA_BASE_URL -e CONNECTION_PLATOFRM wa-connector:latest
-          
-        
+          ssh target docker run -d --name wa-connector -p ${{ vars.PORTS }} -e ${{ vars.NODE_ENV }} -e ${{ secrets.WEBHOOK_VERIFY }} -e ${{ secrets.GRAPH_API_TOKEN }} -e ${{ secrets.BUSINESS_PHONE_NUMBER_ID }} -e ${{ secrets.DIFY_BASE_URL }} -e ${{ secrets.DIFY_API_KEY }} -e ${{ secrets.RASA_BASE_URL }} -e ${{ secrets.CONNECTION_PLATOFRM }} wa-connector:latest
