@@ -1,3 +1,5 @@
+[![Code Quality](https://github.com/hyperjumptech/whatsapp-chatbot-connector/actions/workflows/code-quality.yml/badge.svg)](https://github.com/hyperjumptech/whatsapp-chatbot-connector/actions/workflows/code-quality.yml)
+
 # WhatsApp Chatbot Connector
 
 This project is a WhatsApp Chatbot Connector backend built using Express.js. It is designed to integrate with the WhatsApp Business API and supports various AI platforms such as Dify and Rasa.
