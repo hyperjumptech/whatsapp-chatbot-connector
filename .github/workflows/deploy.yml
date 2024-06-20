@@ -1,4 +1,4 @@
-name: Build and Deploy to aws 1001
+name: Build and Deploy
 
 on: # todo: deploy is tag triggered
   workflow_dispatch:
@@ -39,11 +39,6 @@ jobs:
           known_hosts: ${{ secrets.KNOWN_HOSTS }}
           config: ${{ secrets.CONFIG }} # ssh_config; optional
           if_key_exists: fail # replace / ignore / fail; optional (defaults to fail)
-
-      - name: setup dir
-        run: |
-          sudo mkdir -p /app
-          sudo chown -R $USER:$USER /app
           
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -65,7 +60,4 @@ jobs:
           ssh target docker rm wa-connector || true        
           ssh target docker run -d --name wa-connector -p ${{ env.PORTS }} -e NODE_ENV -e WEBHOOK_VERIFY -e GRAPH_API_TOKEN -e BUSINESS_PHONE_NUMBER_ID -e DIFY_BASE_URL -e DIFY_API_KEY -e RASA_BASE_URL -e CONNECTION_PLATOFRM wa-connector:latest
           
-          
-
-
-
+        
