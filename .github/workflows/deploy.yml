@@ -54,8 +54,14 @@ jobs:
           tags: wa-connector:latest # todo: this is properly tagged/versioned         
 
       - name: push image and restart services
+        # 1. stop running container
+        # 2. remove container
+        # 3. remove image, so no dangling images remain
+        # 4. push new image to target
+        # 5. create new container from new image
         run: |
-          docker save wa-connector:latest | ssh target docker load  
-          ssh target docker stop wa-connector || true
-          ssh target docker rm wa-connector || true        
-          ssh target docker run -d --name wa-connector -p ${{ vars.PORTS }} -e ${{ vars.NODE_ENV }} -e ${{ secrets.WEBHOOK_VERIFY }} -e ${{ secrets.GRAPH_API_TOKEN }} -e ${{ secrets.BUSINESS_PHONE_NUMBER_ID }} -e ${{ secrets.DIFY_BASE_URL }} -e ${{ secrets.DIFY_API_KEY }} -e ${{ secrets.RASA_BASE_URL }} -e ${{ secrets.CONNECTION_PLATOFRM }} wa-connector:latest
+          ssh target docker stop wa-connector || true 
+          ssh target docker rm wa-connector || true
+          ssh target docker rmi wa-connecttor:latest || true
+          docker save wa-connector:latest | ssh target docker load          
+          ssh target docker run -d --name wa-connector -p 5007:5007 --env-file .env wa-connector:latest
