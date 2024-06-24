@@ -39,7 +39,7 @@ jobs:
           known_hosts: ${{ secrets.KNOWN_HOSTS }}
           config: ${{ secrets.CONFIG }} # ssh_config; optional
           if_key_exists: fail # replace / ignore / fail; optional (defaults to fail)
-          
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -51,11 +51,13 @@ jobs:
           file: ./Dockerfile
           load: true
           push: false
-          tags: wa-connector:latest # todo: this is properly tagged/versioned         
+          tags: wa-connector:latest # todo: this is properly tagged/versioned
 
       - name: push image and restart services
+        # 1. push image to target
+        # 2. recreate container
+        # 3. cleanup images
         run: |
-          docker save wa-connector:latest | ssh target docker load  
-          ssh target docker stop wa-connector || true
-          ssh target docker rm wa-connector || true        
-          ssh target docker run -d --name wa-connector -p ${{ vars.PORTS }} -e ${{ vars.NODE_ENV }} -e ${{ secrets.WEBHOOK_VERIFY }} -e ${{ secrets.GRAPH_API_TOKEN }} -e ${{ secrets.BUSINESS_PHONE_NUMBER_ID }} -e ${{ secrets.DIFY_BASE_URL }} -e ${{ secrets.DIFY_API_KEY }} -e ${{ secrets.RASA_BASE_URL }} -e ${{ secrets.CONNECTION_PLATOFRM }} wa-connector:latest
+          docker save wa-connector:latest | ssh target docker load          
+          ssh target docker compose up -d
+          ssh target docker image prune -f

@@ -1,0 +1,12 @@
+version: "3.8"
+name: wa-connector
+
+services:
+  wa-connector:
+    image: wa-connector:latest
+    container_name: wa-connector  
+    ports:
+      - "5007:5007"  
+    env_file:
+      - .env # Load environment variables from the .env file
+
