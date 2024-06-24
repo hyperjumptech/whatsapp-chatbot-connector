@@ -54,14 +54,10 @@ jobs:
           tags: wa-connector:latest # todo: this is properly tagged/versioned         
 
       - name: push image and restart services
-        # 1. stop running container
-        # 2. remove container
+        # 1. push image to target 
+        # 2. spin up new container
         # 3. remove image, so no dangling images remain
-        # 4. push new image to target
-        # 5. create new container from new image
         run: |
-          ssh target docker stop wa-connector || true 
-          ssh target docker rm wa-connector || true
-          ssh target docker rmi wa-connecttor:latest || true
           docker save wa-connector:latest | ssh target docker load          
-          ssh target docker run -d --name wa-connector -p 5007:5007 --env-file .env wa-connector:latest
+          ssh target docker compose up -d
+          ssh target docker images prune
