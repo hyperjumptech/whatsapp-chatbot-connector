@@ -76,7 +76,7 @@ Now just use your WhatsApp app to send a text message to the WhatsApp Business n
 
 
 ## WhatsApp Business API Configuration
-![configuration](.docs//whatsapp-configuration.png)
+![configuration](./docs/whatsapp-configuration.png)
 ![api setup](./docs/whatsap-api-setup.png)
 
 ## Deployment
