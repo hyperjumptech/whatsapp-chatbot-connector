@@ -4,6 +4,9 @@
 
 This project is a WhatsApp Chatbot Connector backend built using Express.js. It is designed to integrate with the WhatsApp Business API and supports various AI platforms such as Dify and Rasa.
 
+Here is the diagram to understand the flow:
+![diagram](./docs/diagram.png)
+
 ## Features
 - Webhook endpoint to receive messages from WhatsApp
 - Integration with Dify and Rasa for natural language processing and response generation
@@ -73,8 +76,8 @@ Now just use your WhatsApp app to send a text message to the WhatsApp Business n
 
 
 ## WhatsApp Business API Configuration
-![configuration](./whatsapp-configuration.png)
-![api setup](./whatsap-api-setup.png)
+![configuration](.docs//whatsapp-configuration.png)
+![api setup](./docs/whatsap-api-setup.png)
 
 ## Deployment
 
