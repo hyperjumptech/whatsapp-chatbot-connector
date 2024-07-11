@@ -12,3 +12,6 @@ dist
 
 # test
 coverage
+
+# Redis
+redis-data
