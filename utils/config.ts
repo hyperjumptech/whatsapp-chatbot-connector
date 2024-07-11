@@ -4,7 +4,9 @@ import { z } from "zod";
 dotenv.config();
 
 const schema = z.object({
-  NODE_ENV: z.enum(["development", "production"]).default("development"),
+  NODE_ENV: z
+    .enum(["test", "development", "production"])
+    .default("development"),
   SESSION_DATABASE: z.enum(["in-memory", "redis"]).default("in-memory"),
   REDIS_URL: z.string().default("redis://localhost:6379"),
 });
