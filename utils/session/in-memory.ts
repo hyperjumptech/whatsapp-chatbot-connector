@@ -1,5 +1,15 @@
-import { createStorage } from "unstorage";
+export default class InMemoryDatabase<T> {
+  private storage: { [key: string]: T };
 
-const inMemory = createStorage();
+  constructor() {
+    this.storage = {};
+  }
 
-export default inMemory;
+  get(key: string) {
+    return this.storage[key] || null;
+  }
+
+  set(key: string, value: T) {
+    this.storage[key] = value;
+  }
+}

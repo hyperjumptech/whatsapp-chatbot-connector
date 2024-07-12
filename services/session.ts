@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { config } from "../utils/config";
-import inMemory from "../utils/session/in-memory";
+import InMemoryDatabase from "../utils/session/in-memory";
 import redis from "../utils/session/redis";
 
 const schema = z.object({
@@ -11,9 +11,11 @@ const schema = z.object({
 
 type Session = z.input<typeof schema>;
 
+const inMemory = new InMemoryDatabase<Session>();
+
 export async function setSession(session: Session) {
   if (config.SESSION_DATABASE === "in-memory") {
-    await inMemory.setItem(session.waId, JSON.stringify(session));
+    inMemory.set(session.waId, session);
   } else if (config.SESSION_DATABASE === "redis") {
     await redis.set(session.waId, JSON.stringify(session));
   }
@@ -21,14 +23,14 @@ export async function setSession(session: Session) {
 
 export async function getSession(waId: Session["waId"]) {
   if (config.SESSION_DATABASE === "in-memory") {
-    const item = (await inMemory.getItem(waId)) as string | null;
+    const item = inMemory.get(waId);
     if (item === null) return null;
 
-    const result = await schema.parseAsync(JSON.parse(item));
+    const result = await schema.parseAsync(item);
 
     return result;
   } else if (config.SESSION_DATABASE === "redis") {
-    const item = (await redis.get(waId)) as string | null;
+    const item = await redis.get(waId);
     if (item === null) return null;
 
     const result = await schema.parseAsync(JSON.parse(item));
