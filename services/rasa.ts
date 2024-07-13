@@ -1,16 +1,10 @@
-import axios from "axios";
 import dotenv from "dotenv";
 import { Request } from "express";
+import { httpClient } from "./http-client";
 
 dotenv.config();
 
 const { RASA_BASE_URL } = process.env;
-
-const AxiosInstanceDify = axios.create({
-  baseURL: RASA_BASE_URL,
-  timeout: 20_000, // 20 seconds,
-  timeoutErrorMessage: "Connection timed out",
-});
 
 export const sendQuery = async ({
   userId,
@@ -19,17 +13,17 @@ export const sendQuery = async ({
   userId: string;
   query: string;
 }) => {
-  return await AxiosInstanceDify({
+  return httpClient(RASA_BASE_URL || "", {
+    signal: AbortSignal.timeout(20_000),
     method: "POST",
-    url: RASA_BASE_URL,
     // TODO: handle authorization
     // headers: {
     //   Authorization: `Bearer ${RASA_TOKEN}`,
     // },
-    data: {
+    body: JSON.stringify({
       message: query,
       sender: userId,
-    },
+    }),
   });
 };
 
@@ -46,15 +40,15 @@ export const queryToRasa = async ({
     query,
   });
 
-  const resData = res.data[0];
-  const buttonLength = resData?.buttons?.length;
+  const resData = ((res.data as Array<unknown>)[0]  as Record<string, unknown>);
+  const buttonLength = ((resData?.buttons) as Array<{ title: string; payload: string }>)?.length;
 
   if (buttonLength > 0) {
     if (buttonLength > 3) {
       return {
         type: "interactive-list",
         text: resData.text,
-        rows: resData.buttons.map(
+        rows: (resData.buttons as Array<{ title: string; payload: string }>).map(
           (rasaBtn: { title: string; payload: string }) => ({
             id: rasaBtn.payload,
             title: rasaBtn.title,
@@ -67,7 +61,7 @@ export const queryToRasa = async ({
     return {
       type: "interactive-button",
       text: resData.text,
-      buttons: resData.buttons.map(
+      buttons: (resData.buttons as Array<{ title: string; payload: string }>).map(
         (rasaBtn: { title: string; payload: string }) => ({
           type: "reply",
           reply: {

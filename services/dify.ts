@@ -1,18 +1,14 @@
-import axios from "axios";
 import dotenv from "dotenv";
 import { Request } from "express";
 import { getUserSession, setUserSession } from "./session";
+import { httpClient } from "./http-client";
 
 dotenv.config();
 
 const { DIFY_API_KEY, DIFY_BASE_URL } = process.env;
 const BASE_URL = DIFY_BASE_URL || `https://api.dify.ai/v1`;
 
-const AxiosInstanceDify = axios.create({
-  baseURL: BASE_URL,
-  timeout: 20_000, // 20 seconds,
-  timeoutErrorMessage: "Connection timed out",
-});
+
 
 export const sendQuery = async ({
   userId,
@@ -23,20 +19,23 @@ export const sendQuery = async ({
   conversationId: string;
   query: string;
 }) => {
-  return await AxiosInstanceDify({
-    method: "POST",
-    url: `${BASE_URL}/chat-messages`,
-    headers: {
-      Authorization: `Bearer ${DIFY_API_KEY}`,
-    },
-    data: {
-      inputs: {},
-      query,
-      response_mode: "blocking",
-      conversation_id: conversationId,
-      user: userId,
-    },
-  });
+  return httpClient(`${BASE_URL}/chat-messages`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${DIFY_API_KEY}`,
+      },
+      signal: AbortSignal.timeout(20_000),      
+      body: JSON.stringify({
+        inputs: {},
+        query,
+        response_mode: "blocking",
+        conversation_id: conversationId,
+        user: userId,
+      })
+    }
+  )
+
 };
 
 export const queryToDify = async ({
@@ -58,9 +57,9 @@ export const queryToDify = async ({
   if (!user) {
     setUserSession({
       id: waId,
-      conversationId: res.data.conversation_id,
+      conversationId: (res.data as  Record<string, string>).conversation_id,
     });
   }
 
-  return {text: res.data.answer};
+  return {text: (res.data as  Record<string, string>).answer};
 };
