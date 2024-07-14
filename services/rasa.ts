@@ -34,13 +34,14 @@ export const sendQuery = async ({
 };
 
 export const queryToRasa = async ({
-  req,
+  body,
   query,
 }: {
-  req: Request;
+  body: unknown;
   query: string;
 }) => {
-  const waId = req.body.entry?.[0]?.changes[0]?.value?.contacts?.[0]?.wa_id;
+  
+  const waId =(body as Record<string, Record<string, Record<string, Record<string, Record<string, Record<string, Record<string, Record<string, unknown>>>>>>>>).entry?.[0]?.changes[0]?.value?.contacts?.[0]?.wa_id as string;
   const res = await sendQuery({
     userId: waId,
     query,
