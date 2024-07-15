@@ -45,6 +45,9 @@ webhookRoutes.post("/", async (req, res) => {
     return;
   }
 
+  // aknowledge that the message has been read and be processed
+  await markChatAsRead(message.id);
+
   let chatbotReply = null;
   let queryText = "";
 
@@ -54,11 +57,18 @@ webhookRoutes.post("/", async (req, res) => {
         queryText = message.interactive.button_reply.id;
       } else if (message.interactive.type === "list_reply") {
         queryText = message.interactive.list_reply.id;
+      } else if (message.interactive.type === "nfm_reply") {
+        queryText = "";
       }
       break;
     default:
       queryText = message.text.body;
       break;
+  }
+
+  if (!queryText) {
+    res.sendStatus(200);
+    return;
   }
 
   if (CONNECTION_PLATFORM === DIFY) {
@@ -74,7 +84,6 @@ webhookRoutes.post("/", async (req, res) => {
   }
 
   await sendChatbotReply({ to: message.from, chatbotReply });
-  await markChatAsRead(message.id);
 
   res.sendStatus(200);
 });
