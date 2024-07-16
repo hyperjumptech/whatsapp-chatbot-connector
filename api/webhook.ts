@@ -78,7 +78,7 @@ webhookRoutes.post("/", async (req, res) => {
   }
   console.log("Chatbot Reply:\n", chatbotReply);
 
-  if (!chatbotReply) {
+  if (!chatbotReply || !chatbotReply.text) {
     res.sendStatus(200);
     return;
   }
