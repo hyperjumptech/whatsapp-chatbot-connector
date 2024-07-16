@@ -11,7 +11,7 @@ Here is the diagram to understand the flow:
 
 - Webhook endpoint to receive messages from WhatsApp
 - Integration with Dify and Rasa for natural language processing and response generation
-- Verification of incoming webhook requests
+- Displaying interactive whatsapp message like [List](https://developers.facebook.com/docs/whatsapp/cloud-api/messages/interactive-list-messages), [Reply Buttons](https://developers.facebook.com/docs/whatsapp/cloud-api/messages/interactive-reply-buttons-messages), and [Flow](https://developers.facebook.com/docs/whatsapp/cloud-api/messages/interactive-flow-messages)
 
 ## Prerequisites
 
@@ -90,6 +90,53 @@ Now just use your WhatsApp app to send a text message to the WhatsApp Business n
 
 ![configuration](./docs/whatsapp-configuration.png)
 ![api setup](./docs/whatsap-api-setup.png)
+
+## Interactive Message Configuration
+
+### Flow
+
+To create a Flow, you must setup many things like in the [docs](https://developers.facebook.com/docs/whatsapp/flows). I will mention over-simplified version for easy starting point:
+
+1. Create a Flow
+2. Setup server endpoint
+3. Setup Dify to trigger sending HTTP Request with this [JSON format](https://developers.facebook.com/docs/whatsapp/flows/gettingstarted/sendingaflow). Here is the example request body:
+
+```json
+{
+  "recipient_type": "individual",
+  "messaging_product": "whatsapp",
+  "to": "{{#sys.user_id#}}",
+  "type": "interactive",
+  "interactive": {
+    "type": "flow",
+    "header": {
+      "type": "text",
+      "text": "Event Registration"
+    },
+    "body": {
+      "text": "Click button below to authenticate yourself"
+    },
+    "action": {
+      "name": "flow",
+      "parameters": {
+        "mode": "draft", // delete this field for production use (when your flow is published)
+        "flow_message_version": "3",
+        "flow_token": "auth_flow-{{#sys.user_id#}}.",
+        "flow_id": "1234567812345678",
+        "flow_cta": "Start",
+        "flow_action": "data_exchange"
+      }
+    }
+  }
+}
+```
+
+4. It will send CTA button to trigger the Flow
+   ![flow cta](./docs/flow-cta.jpeg)
+5. Fill in, complete, and submit the form
+   ![flow form](./docs/flow-form.jpeg)
+6. Sent status will be displayed
+   ![flow sent](./docs/flow-sent.jpeg)
 
 ## Deployment
 
