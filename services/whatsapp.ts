@@ -1,16 +1,11 @@
-import axios, { AxiosError } from "axios";
 import dotenv from "dotenv";
+import { httpClient } from "./http-client";
+import { FetchError } from "node-fetch";
 
 dotenv.config();
 
 const { GRAPH_API_TOKEN, BUSINESS_PHONE_NUMBER_ID } = process.env;
 const BASE_URL = `https://graph.facebook.com/v19.0/${BUSINESS_PHONE_NUMBER_ID}`;
-
-const AxiosInstanceWhatsapp = axios.create({
-  baseURL: BASE_URL,
-  timeout: 20_000, // 20 seconds,
-  timeoutErrorMessage: "Connection timed out",
-});
 
 export const sendChatbotReply = async ({
   to,
@@ -53,24 +48,29 @@ export const sendTextMessage = async ({
   text: string;
 }) => {
   try {
-    return await AxiosInstanceWhatsapp({
+    return httpClient(`${BASE_URL}/messages`, {
+      signal: AbortSignal.timeout(20_000),
       method: "POST",
-      url: `${BASE_URL}/messages`,
       headers: {
         Authorization: `Bearer ${GRAPH_API_TOKEN}`,
       },
-      data: {
+      body: JSON.stringify({
         messaging_product: "whatsapp",
         to,
         type: "text",
         text: { preview_url: true, body: text },
-      },
-    });
+      }),      
+    })
   } catch (error: unknown) {
+    let errorMessage = "";
+    if((error as Record<string, string>) .name === "AbortError"){
+      errorMessage = "Connection timed out";
+    }else{
+      const fetchError: FetchError = (error as FetchError);
+      errorMessage = fetchError.message;
+    }
     console.error(
-      `Cannot send WhatsApp message, got: ${JSON.stringify(
-        (error as AxiosError)?.response?.data || error
-      )}`
+      `Cannot send WhatsApp message, got: ${errorMessage}`
     );
   }
 };
@@ -91,13 +91,12 @@ export const sendInteractiveReplyButton = async ({
   }[];
 }) => {
   try {
-    return await AxiosInstanceWhatsapp({
-      method: "POST",
-      url: `${BASE_URL}/messages`,
+    return httpClient(`${BASE_URL}/messages`, {
+      method: "POST",      
       headers: {
         Authorization: `Bearer ${GRAPH_API_TOKEN}`,
       },
-      data: {
+      body: JSON.stringify({
         messaging_product: "whatsapp",
         to,
         type: "interactive",
@@ -108,15 +107,20 @@ export const sendInteractiveReplyButton = async ({
           footer: { text: "" },
           action: { buttons },
         },
-      },
-    });
+      }),    
+    })
   } catch (error: unknown) {
+    let errorMessage = "";
+    if((error as Record<string, string>) .name === "AbortError"){
+      errorMessage = "Connection timed out";
+    }else{
+      const fetchError: FetchError = (error as FetchError);
+      errorMessage = fetchError.message;
+    }
     console.error(
-      `Cannot send WhatsApp message, got: ${JSON.stringify(
-        (error as AxiosError)?.response?.data || error
-      )}`
+      `Cannot send WhatsApp message, got: ${errorMessage}`
     );
-  }
+  }  
 };
 
 export const sendInteractiveListMessage = async ({
@@ -133,13 +137,12 @@ export const sendInteractiveListMessage = async ({
   }[];
 }) => {
   try {
-    return await AxiosInstanceWhatsapp({
-      method: "POST",
-      url: `${BASE_URL}/messages`,
+    return httpClient(`${BASE_URL}/messages`, {
+      method: "POST",      
       headers: {
         Authorization: `Bearer ${GRAPH_API_TOKEN}`,
       },
-      data: {
+      body: JSON.stringify({
         messaging_product: "whatsapp",
         to,
         type: "interactive",
@@ -150,28 +153,35 @@ export const sendInteractiveListMessage = async ({
           footer: { text: "" },
           action: { sections: [{ title: "", rows }], button: "Menu" },
         },
-      },
-    });
+      }),
+    })
   } catch (error: unknown) {
+    let errorMessage = "";
+    if((error as Record<string, string>) .name === "AbortError"){
+      errorMessage = "Connection timed out";
+    }else{
+      const fetchError: FetchError = (error as FetchError);
+      errorMessage = fetchError.message;
+    }
     console.error(
-      `Cannot send WhatsApp message, got: ${JSON.stringify(
-        (error as AxiosError)?.response?.data || error
-      )}`
+      `Cannot send WhatsApp message, got: ${errorMessage}`
     );
-  }
+  }    
+
 };
 
 export const markChatAsRead = async (messageId: string) => {
-  return await AxiosInstanceWhatsapp({
-    method: "POST",
-    url: `${BASE_URL}/messages`,
+
+    return httpClient(`${BASE_URL}/messages`, {
+    method: "POST",    
     headers: {
       Authorization: `Bearer ${GRAPH_API_TOKEN}`,
     },
-    data: {
+    body: JSON.stringify({
       messaging_product: "whatsapp",
       status: "read",
       message_id: messageId,
-    },
-  });
+    }),
+  })
+
 };
