@@ -20,7 +20,8 @@ if (NODE_ENV === "development") {
   app.use(morgan("common"));
 }
 
-app.get("/", (_req, res) => res.send("Whatsapp Chatbot Connector by Hyperjump"));
+const today = new Date();
+app.get("/", (_req, res) => res.send("Whatsapp Chatbot Connector by Hyperjump.\n Today is " + today.toDateString()));
 
 app.use("/webhook", webhookRoutes);
 
