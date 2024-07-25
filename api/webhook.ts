@@ -1,8 +1,11 @@
 import express from "express";
 import dotenv from "dotenv";
-import { markChatAsRead, sendChatbotReply } from "../services/whatsapp";
+import {  sendChatbotReply } from "../services/whatsapp";
 import { queryToDify } from "../services/dify";
 import { queryToRasa } from "../services/rasa";
+import { sendToQueue } from "../services/queue";
+import {ParamsDictionary, Request} from "express-serve-static-core";
+import { ParsedQs } from "qs";
 
 dotenv.config();
 
@@ -46,9 +49,7 @@ webhookRoutes.post("/", async (req, res) => {
   }
 
   // aknowledge that the message has been read and be processed
-  await markChatAsRead(message.id);
-
-  let chatbotReply = null;
+  await sendToQueue('markChatAsRead', [message.id]);
   let queryText = "";
 
   switch (message.type) {
@@ -71,6 +72,15 @@ webhookRoutes.post("/", async (req, res) => {
     return;
   }
 
+  await sendToQueue('queryPlatform', [req, queryText, message.from]);
+
+
+  res.sendStatus(200);
+});
+
+export const queryPlatform = async (req:Request<ParamsDictionary, unknown, unknown, ParsedQs, Record<string, unknown>>, queryText: string, from: string)=>{
+  let chatbotReply = null;
+
   if (CONNECTION_PLATFORM === DIFY) {
     chatbotReply = await queryToDify({ req, query: queryText });
   } else if (CONNECTION_PLATFORM === RASA) {
@@ -78,14 +88,11 @@ webhookRoutes.post("/", async (req, res) => {
   }
   console.log("Chatbot Reply:\n", chatbotReply);
 
-  if (!chatbotReply || !chatbotReply.text) {
-    res.sendStatus(200);
+  if (!chatbotReply || !chatbotReply.text) {    
     return;
   }
+  await sendChatbotReply({ to: from, chatbotReply });
 
-  await sendChatbotReply({ to: message.from, chatbotReply });
-
-  res.sendStatus(200);
-});
+}
 
 export default webhookRoutes;

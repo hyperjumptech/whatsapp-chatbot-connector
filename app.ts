@@ -3,12 +3,19 @@ import morgan from "morgan";
 import dotenv from "dotenv";
 import bodyParser from "body-parser";
 
-import webhookRoutes from "./api/webhook";
+import webhookRoutes, { queryPlatform } from "./api/webhook";
+import { setupQueueHandlers } from "./services/queue";
+import { markChatAsRead } from "./services/whatsapp";
 
 // Load environment variables from .env file
 dotenv.config();
 
 const { NODE_ENV } = process.env;
+
+setupQueueHandlers({
+  'markChatAsRead': markChatAsRead,
+  'queryPlatform': queryPlatform
+})
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
