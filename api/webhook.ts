@@ -8,10 +8,17 @@ dotenv.config();
 
 const webhookRoutes = express.Router();
 
-const { WEBHOOK_VERIFY_TOKEN, CONNECTION_PLATFORM } = process.env;
-console.log("CONNECTION_PLATFORM: ", CONNECTION_PLATFORM);
+const {
+  WEBHOOK_VERIFY_TOKEN,
+  CONNECTION_PLATFORM,
+  SESSION_DATABASE,
+  NODE_ENV,
+} = process.env;
 const DIFY = "dify";
 const RASA = "rasa";
+
+console.log("CONNECTION_PLATFORM: ", CONNECTION_PLATFORM);
+console.log("SESSION_DATABASE: ", SESSION_DATABASE);
 
 // accepts GET requests at the /webhook endpoint. You need this URL to setup webhook initially.
 // info on verification request payload: https://developers.facebook.com/docs/graph-api/webhooks/getting-started#verification-requests
@@ -46,7 +53,9 @@ webhookRoutes.post("/", async (req, res) => {
   }
 
   // aknowledge that the message has been read and be processed
-  await markChatAsRead(message.id);
+  if (NODE_ENV === "production") {
+    await markChatAsRead(message.id);
+  }
 
   let chatbotReply = null;
   let queryText = "";

@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const { GRAPH_API_TOKEN, BUSINESS_PHONE_NUMBER_ID } = process.env;
+const { GRAPH_API_TOKEN, BUSINESS_PHONE_NUMBER_ID, NODE_ENV } = process.env;
 const BASE_URL = `https://graph.facebook.com/v19.0/${BUSINESS_PHONE_NUMBER_ID}`;
 
 const AxiosInstanceWhatsapp = axios.create({
@@ -24,23 +24,28 @@ export const sendChatbotReply = async ({
     rows?: { id: string; title: string; description: string }[];
   };
 }) => {
+  const replyText =
+    NODE_ENV === "development"
+      ? `[DEV]\n----------\n${chatbotReply.text}`
+      : chatbotReply.text;
+
   switch (chatbotReply?.type) {
     case "interactive-button":
       await sendInteractiveReplyButton({
         to,
-        text: chatbotReply.text,
+        text: replyText,
         buttons: chatbotReply.buttons,
       });
       break;
     case "interactive-list":
       await sendInteractiveListMessage({
         to,
-        text: chatbotReply.text,
+        text: replyText,
         rows: chatbotReply.rows,
       });
       break;
     default:
-      await sendTextMessage({ to, text: chatbotReply.text });
+      await sendTextMessage({ to, text: replyText });
       break;
   }
 };
