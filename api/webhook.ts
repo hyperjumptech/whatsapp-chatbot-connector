@@ -8,12 +8,8 @@ dotenv.config();
 
 const webhookRoutes = express.Router();
 
-const {
-  WEBHOOK_VERIFY_TOKEN,
-  CONNECTION_PLATFORM,
-  SESSION_DATABASE,
-  NODE_ENV,
-} = process.env;
+const { WEBHOOK_VERIFY_TOKEN, CONNECTION_PLATFORM, SESSION_DATABASE } =
+  process.env;
 const DIFY = "dify";
 const RASA = "rasa";
 
@@ -31,7 +27,6 @@ webhookRoutes.get("/", (req, res) => {
   if (mode === "subscribe" && token === WEBHOOK_VERIFY_TOKEN) {
     // respond with 200 OK and challenge token from the request
     res.status(200).send(challenge);
-    console.log("Webhook verified successfully!");
   } else {
     // respond with '403 Forbidden' if verify tokens do not match
     res.sendStatus(403);
@@ -39,23 +34,28 @@ webhookRoutes.get("/", (req, res) => {
 });
 
 webhookRoutes.post("/", async (req, res) => {
-  // log incoming messages
-  console.log("Incoming webhook message:", JSON.stringify(req.body));
-
   // check if the webhook request contains a message
   // details on WhatsApp text message payload: https://developers.facebook.com/docs/whatsapp/cloud-api/webhooks/payload-examples#text-messages
   const message = req.body.entry?.[0]?.changes[0]?.value?.messages?.[0];
 
-  // check if the incoming message contains text
+  // check if the incoming message contains text. if not, it is a status webhook
   if (!message?.type) {
+    // log incoming status
+    const status = req.body.entry?.[0]?.changes[0]?.value?.statuses?.[0];
+    console.log(
+      `[Incoming webhook status] phone:${status.recipient_id} - entry.id:${req.body.entry?.[0]?.id} - status: ${status.status}`
+    );
     res.sendStatus(200);
     return;
   }
 
+  // log incoming messages
+  console.log(
+    `[Incoming webhook message] phone:${message.from} - entry.id:${req.body.entry?.[0]?.id} - text-body: ${message.text?.body} - message-type: ${message.type} - interactive-type: ${message.interactive?.type}`
+  );
+
   // aknowledge that the message has been read and be processed
-  if (NODE_ENV === "production") {
-    await markChatAsRead(message.id);
-  }
+  await markChatAsRead(message.id);
 
   let chatbotReply = null;
   let queryText = "";
@@ -85,7 +85,7 @@ webhookRoutes.post("/", async (req, res) => {
   } else if (CONNECTION_PLATFORM === RASA) {
     chatbotReply = await queryToRasa({ req, query: queryText });
   }
-  console.log("Chatbot Reply:\n", chatbotReply);
+  console.log("[Chatbot reply]: ", chatbotReply);
 
   if (!chatbotReply || !chatbotReply.text) {
     res.sendStatus(200);
