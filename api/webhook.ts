@@ -43,8 +43,11 @@ webhookRoutes.post("/", async (req, res) => {
     // log incoming status
     const status = req.body.entry?.[0]?.changes[0]?.value?.statuses?.[0];
     console.log(
-      `[Incoming webhook status] phone:${status.recipient_id} - entry.id:${req.body.entry?.[0]?.id} - status: ${status.status}`
+      `[Incoming webhook status] phone:${status?.recipient_id} - entry.id:${req.body.entry?.[0]?.id} - status: ${status?.status}`
     );
+    if (!status?.recipient_id) {
+      console.log("Incoming webhook message:", JSON.stringify(req.body));
+    }
     res.sendStatus(200);
     return;
   }
@@ -55,7 +58,11 @@ webhookRoutes.post("/", async (req, res) => {
   );
 
   // aknowledge that the message has been read and be processed
-  await markChatAsRead(message.id);
+  try {
+    await markChatAsRead(message.id);
+  } catch (error) {
+    console.error("Error markChatAsRead: " + error);
+  }
 
   let chatbotReply = null;
   let queryText = "";
@@ -92,7 +99,11 @@ webhookRoutes.post("/", async (req, res) => {
     return;
   }
 
-  await sendChatbotReply({ to: message.from, chatbotReply });
+  try {
+    await sendChatbotReply({ to: message.from, chatbotReply });
+  } catch (error) {
+    console.error("Error sendChatbotReply: " + error);
+  }
 
   res.sendStatus(200);
 });

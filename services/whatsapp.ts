@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const { GRAPH_API_TOKEN, BUSINESS_PHONE_NUMBER_ID, NODE_ENV } = process.env;
+const { GRAPH_API_TOKEN, BUSINESS_PHONE_NUMBER_ID } = process.env;
 const BASE_URL = `https://graph.facebook.com/v19.0/${BUSINESS_PHONE_NUMBER_ID}`;
 
 const AxiosInstanceWhatsapp = axios.create({
@@ -24,28 +24,23 @@ export const sendChatbotReply = async ({
     rows?: { id: string; title: string; description: string }[];
   };
 }) => {
-  const replyText =
-    NODE_ENV === "development"
-      ? `[DEV]\n----------\n${chatbotReply.text}`
-      : chatbotReply.text;
-
   switch (chatbotReply?.type) {
     case "interactive-button":
       await sendInteractiveReplyButton({
         to,
-        text: replyText,
+        text: chatbotReply.text,
         buttons: chatbotReply.buttons,
       });
       break;
     case "interactive-list":
       await sendInteractiveListMessage({
         to,
-        text: replyText,
+        text: chatbotReply.text,
         rows: chatbotReply.rows,
       });
       break;
     default:
-      await sendTextMessage({ to, text: replyText });
+      await sendTextMessage({ to, text: chatbotReply.text });
       break;
   }
 };
@@ -73,7 +68,7 @@ export const sendTextMessage = async ({
     });
   } catch (error: unknown) {
     console.error(
-      `Cannot send WhatsApp message, got: ${JSON.stringify(
+      `Error sendTextMessage: ${JSON.stringify(
         (error as AxiosError)?.response?.data || error
       )}`
     );
@@ -117,7 +112,7 @@ export const sendInteractiveReplyButton = async ({
     });
   } catch (error: unknown) {
     console.error(
-      `Cannot send WhatsApp message, got: ${JSON.stringify(
+      `Error sendInteractiveReplyButton: ${JSON.stringify(
         (error as AxiosError)?.response?.data || error
       )}`
     );
@@ -159,7 +154,7 @@ export const sendInteractiveListMessage = async ({
     });
   } catch (error: unknown) {
     console.error(
-      `Cannot send WhatsApp message, got: ${JSON.stringify(
+      `Error sendInteractiveListMessage: ${JSON.stringify(
         (error as AxiosError)?.response?.data || error
       )}`
     );
