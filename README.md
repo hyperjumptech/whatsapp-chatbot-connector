@@ -22,6 +22,8 @@ npm (v10.x or later)
 
 ## Getting Started
 
+### Quick Start
+
 1. Clone the Repository
 
 ```bash
@@ -70,6 +72,16 @@ If you are running on local, you can use [ngrok](https://ngrok.com/docs/getting-
 6. Send text message to the WhatsApp Business API
 
 Now just use your WhatsApp app to send a text message to the WhatsApp Business number and you will see the response from the chatbot connected.
+
+### Optional Development Dependencies
+
+To start up the optional development dependecies like Redis, you can use Docker .
+
+Go to folder `.dev` then
+
+```
+docker compose up -d
+```
 
 ## Environment Variables
 
@@ -140,7 +152,25 @@ To create a Flow, you must setup many things like in the [docs](https://develope
 
 ## Deployment
 
+### Vercel
+
 You can deploy this app to any server that runs Node.js. The easiest one is to use Vercel. Just clone this repo and connect it from Vercel Dashboard then you are good to go.
+
+### Docker
+
+Use `Dockerfile` and `docker-compose.yml` file in the root folder.
+
+1. Build docker image
+
+```
+docker build -f Dockerfile
+```
+
+2. Run the docker
+
+```
+docker compose up -d
+```
 
 ## License
 

@@ -68,7 +68,7 @@ export const sendTextMessage = async ({
     });
   } catch (error: unknown) {
     console.error(
-      `Cannot send WhatsApp message, got: ${JSON.stringify(
+      `Error sendTextMessage: ${JSON.stringify(
         (error as AxiosError)?.response?.data || error
       )}`
     );
@@ -112,7 +112,7 @@ export const sendInteractiveReplyButton = async ({
     });
   } catch (error: unknown) {
     console.error(
-      `Cannot send WhatsApp message, got: ${JSON.stringify(
+      `Error sendInteractiveReplyButton: ${JSON.stringify(
         (error as AxiosError)?.response?.data || error
       )}`
     );
@@ -154,7 +154,7 @@ export const sendInteractiveListMessage = async ({
     });
   } catch (error: unknown) {
     console.error(
-      `Cannot send WhatsApp message, got: ${JSON.stringify(
+      `Error sendInteractiveListMessage: ${JSON.stringify(
         (error as AxiosError)?.response?.data || error
       )}`
     );
