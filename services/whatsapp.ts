@@ -186,6 +186,7 @@ export const _markChatAsRead = async (messageId: string) => {
     await markChatAsRead(messageId);
   } catch (error) {
     console.error("Error markChatAsRead: " + error);
+    console.error((error as AxiosError)?.response?.data);
   }
 };
 
@@ -194,12 +195,17 @@ export const _queryAndReply = async (payloadString: string) => {
   const { waId, query, messageFrom } = payload;
   let chatbotReply = null;
 
-  if (CONNECTION_PLATFORM === DIFY) {
-    chatbotReply = await queryToDify({ waId, query });
-  } else if (CONNECTION_PLATFORM === RASA) {
-    chatbotReply = await queryToRasa({ waId, query });
+  try {
+    if (CONNECTION_PLATFORM === DIFY) {
+      chatbotReply = await queryToDify({ waId, query });
+    } else if (CONNECTION_PLATFORM === RASA) {
+      chatbotReply = await queryToRasa({ waId, query });
+    }
+    console.log("[Chatbot reply]: ", chatbotReply);
+  } catch (error) {
+    console.error("Error queryToPlatform: " + error);
+    console.error((error as AxiosError)?.response?.data);
   }
-  console.log("[Chatbot reply]: ", chatbotReply);
 
   if (!chatbotReply || !chatbotReply.text) {
     // do nothing
@@ -210,5 +216,6 @@ export const _queryAndReply = async (payloadString: string) => {
     await sendChatbotReply({ to: messageFrom, chatbotReply });
   } catch (error) {
     console.error("Error sendChatbotReply: " + error);
+    console.error((error as AxiosError)?.response?.data);
   }
 };
