@@ -192,14 +192,14 @@ export const _markChatAsRead = async (messageId: string) => {
 
 export const _queryAndReply = async (payloadString: string) => {
   const payload = JSON.parse(payloadString);
-  const { waId, query, messageFrom } = payload;
+  const { query, messageFrom } = payload;
   let chatbotReply = null;
 
   try {
     if (CONNECTION_PLATFORM === DIFY) {
-      chatbotReply = await queryToDify({ waId, query });
+      chatbotReply = await queryToDify({ waId: messageFrom, query });
     } else if (CONNECTION_PLATFORM === RASA) {
-      chatbotReply = await queryToRasa({ waId, query });
+      chatbotReply = await queryToRasa({ waId: messageFrom, query });
     }
     console.log("[Chatbot reply]: ", chatbotReply);
   } catch (error) {
