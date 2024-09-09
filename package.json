@@ -8,8 +8,7 @@
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc",
     "start": "node dist/index.js",
-    "lint": "eslint --ignore-pattern dist",
-    "start-worker": "ts-node worker/index.ts"
+    "lint": "eslint --ignore-pattern dist"
   },
   "keywords": [],
   "author": "",

@@ -1,8 +1,8 @@
 import express from "express";
 import dotenv from "dotenv";
-
 import { Queue } from "bullmq";
 import { config } from "../utils/config";
+import { _markChatAsRead, _queryAndReply } from "../services/whatsapp";
 
 dotenv.config();
 
@@ -74,11 +74,15 @@ webhookRoutes.post("/", async (req, res) => {
   );
 
   // aknowledge that the message has been read and be processed
-  try {
-    const job = await myQueue.add("markChatAsRead", message.id);
-    console.log(`[markChatAsRead] Job added successfully with ID: ${job.id}`);
-  } catch (error) {
-    console.error("[markChatAsRead] Error adding job:", error);
+  if (SESSION_DATABASE === "redis") {
+    try {
+      const job = await myQueue.add("markChatAsRead", message.id);
+      console.log(`[markChatAsRead] Job added successfully with ID: ${job.id}`);
+    } catch (error) {
+      console.error("[markChatAsRead] Error adding job:", error);
+    }
+  } else {
+    await _markChatAsRead(message.id);
   }
 
   // get the query text by message.type
@@ -105,17 +109,21 @@ webhookRoutes.post("/", async (req, res) => {
 
   // process the query and send reply
   const waId = req.body.entry?.[0]?.changes[0]?.value?.contacts?.[0]?.wa_id;
-  try {
-    const job = await myQueue.add("queryAndReply", {
-      payload: JSON.stringify({
-        waId,
-        query: queryText,
-        messageFrom: message.from,
-      }),
-    });
-    console.log(`[queryAndReply] Job added successfully with ID: ${job.id}`);
-  } catch (error) {
-    console.error("[queryAndReply] Error adding job:", error);
+  const payload = JSON.stringify({
+    waId,
+    query: queryText,
+    messageFrom: message.from,
+  });
+
+  if (SESSION_DATABASE === "redis") {
+    try {
+      const job = await myQueue.add("queryAndReply", payload);
+      console.log(`[queryAndReply] Job added successfully with ID: ${job.id}`);
+    } catch (error) {
+      console.error("[queryAndReply] Error adding job:", error);
+    }
+  } else {
+    await _queryAndReply(payload);
   }
 
   res.sendStatus(200);

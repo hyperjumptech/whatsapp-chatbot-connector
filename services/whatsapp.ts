@@ -1,9 +1,13 @@
 import axios, { AxiosError } from "axios";
 import dotenv from "dotenv";
+import { queryToDify } from "./dify";
+import { queryToRasa } from "./rasa";
 
 dotenv.config();
-
-const { GRAPH_API_TOKEN, BUSINESS_PHONE_NUMBER_ID } = process.env;
+const DIFY = "dify";
+const RASA = "rasa";
+const { GRAPH_API_TOKEN, BUSINESS_PHONE_NUMBER_ID, CONNECTION_PLATFORM } =
+  process.env;
 const BASE_URL = `https://graph.facebook.com/v19.0/${BUSINESS_PHONE_NUMBER_ID}`;
 
 const AxiosInstanceWhatsapp = axios.create({
@@ -174,4 +178,37 @@ export const markChatAsRead = async (messageId: string) => {
       message_id: messageId,
     },
   });
+};
+
+// helpers
+export const _markChatAsRead = async (messageId: string) => {
+  try {
+    await markChatAsRead(messageId);
+  } catch (error) {
+    console.error("Error markChatAsRead: " + error);
+  }
+};
+
+export const _queryAndReply = async (payloadString: string) => {
+  const payload = JSON.parse(payloadString);
+  const { waId, query, messageFrom } = payload;
+  let chatbotReply = null;
+
+  if (CONNECTION_PLATFORM === DIFY) {
+    chatbotReply = await queryToDify({ waId, query });
+  } else if (CONNECTION_PLATFORM === RASA) {
+    chatbotReply = await queryToRasa({ waId, query });
+  }
+  console.log("[Chatbot reply]: ", chatbotReply);
+
+  if (!chatbotReply || !chatbotReply.text) {
+    // do nothing
+    return;
+  }
+
+  try {
+    await sendChatbotReply({ to: messageFrom, chatbotReply });
+  } catch (error) {
+    console.error("Error sendChatbotReply: " + error);
+  }
 };
