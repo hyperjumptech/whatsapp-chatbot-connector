@@ -14,12 +14,15 @@ const { WEBHOOK_VERIFY_TOKEN, CONNECTION_PLATFORM, SESSION_DATABASE } =
 console.log("CONNECTION_PLATFORM: ", CONNECTION_PLATFORM);
 console.log("SESSION_DATABASE: ", SESSION_DATABASE);
 
-const myQueue = new Queue("messages", {
-  connection: {
-    host: config.REDIS_HOST,
-    port: config.REDIS_PORT,
-  },
-});
+let myQueue = null;
+if (SESSION_DATABASE === "redis") {
+  myQueue = new Queue("messages", {
+    connection: {
+      host: config.REDIS_HOST,
+      port: config.REDIS_PORT,
+    },
+  });
+}
 
 // accepts GET requests at the /webhook endpoint. You need this URL to setup webhook initially.
 // info on verification request payload: https://developers.facebook.com/docs/graph-api/webhooks/getting-started#verification-requests
@@ -76,8 +79,10 @@ webhookRoutes.post("/", async (req, res) => {
   // aknowledge that the message has been read and be processed
   if (SESSION_DATABASE === "redis") {
     try {
-      const job = await myQueue.add("markChatAsRead", message.id);
-      console.log(`[markChatAsRead] Job added successfully with ID: ${job.id}`);
+      const job = await myQueue?.add("markChatAsRead", message.id);
+      console.log(
+        `[markChatAsRead] Job added successfully with ID: ${job?.id}`
+      );
     } catch (error) {
       console.error("[markChatAsRead] Error adding job:", error);
     }
@@ -115,8 +120,8 @@ webhookRoutes.post("/", async (req, res) => {
 
   if (SESSION_DATABASE === "redis") {
     try {
-      const job = await myQueue.add("queryAndReply", payload);
-      console.log(`[queryAndReply] Job added successfully with ID: ${job.id}`);
+      const job = await myQueue?.add("queryAndReply", payload);
+      console.log(`[queryAndReply] Job added successfully with ID: ${job?.id}`);
     } catch (error) {
       console.error("[queryAndReply] Error adding job:", error);
     }

@@ -1,5 +1,5 @@
-const request = require("supertest");
-const appTest = require("../app");
+import request from "supertest";
+import appTest from "../app";
 
 describe("Test the root path", () => {
   test("It should response the GET method", async () => {
