@@ -1,6 +1,5 @@
 import axios from "axios";
 import dotenv from "dotenv";
-import { Request } from "express";
 import { getSession, setSession } from "./session";
 
 dotenv.config();
@@ -40,13 +39,12 @@ export const sendQuery = async ({
 };
 
 export const queryToDify = async ({
-  req,
+  waId,
   query,
 }: {
-  req: Request;
+  waId: string;
   query: string;
 }) => {
-  const waId = req.body.entry?.[0]?.changes[0]?.value?.contacts?.[0]?.wa_id;
   const user = await getSession(waId);
 
   const res = await sendQuery({

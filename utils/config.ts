@@ -11,4 +11,14 @@ const schema = z.object({
   REDIS_URL: z.string().default("redis://localhost:6379"),
 });
 
-export const config = schema.parse(process.env);
+const originalEnvConfig = schema.parse(process.env);
+
+const redisUrl = new URL(originalEnvConfig.REDIS_URL);
+const REDIS_HOST = redisUrl.hostname || "localhost";
+const REDIS_PORT = Number(redisUrl.port) || 6379;
+
+export const config = {
+  ...originalEnvConfig,
+  REDIS_HOST,
+  REDIS_PORT,
+};
