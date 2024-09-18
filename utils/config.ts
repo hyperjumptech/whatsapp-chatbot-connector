@@ -10,8 +10,8 @@ const schema = z
       .default("development"),
     SESSION_DATABASE: z.enum(["in-memory", "redis"]).default("in-memory"),
     REDIS_URL: z.string().default("redis://localhost:6379"),
-    GRAPH_API_TOKEN: z.string(),
-    BUSINESS_PHONE_NUMBER_ID: z.string(),
+    GRAPH_API_TOKEN: z.string().default(""),
+    BUSINESS_PHONE_NUMBER_ID: z.string().default(""),
     CONNECTION_PLATFORM: z.enum(["dify", "rasa"]).default("dify"),
   })
   .transform((env) => {
