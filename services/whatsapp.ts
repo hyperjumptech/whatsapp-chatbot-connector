@@ -1,9 +1,14 @@
 import axios, { AxiosError } from "axios";
 import dotenv from "dotenv";
+import { queryToDify } from "./dify";
+import { queryToRasa } from "./rasa";
+import { config } from "../utils/config";
 
 dotenv.config();
-
-const { GRAPH_API_TOKEN, BUSINESS_PHONE_NUMBER_ID } = process.env;
+const DIFY = "dify";
+const RASA = "rasa";
+const { GRAPH_API_TOKEN, BUSINESS_PHONE_NUMBER_ID, CONNECTION_PLATFORM } =
+  config;
 const BASE_URL = `https://graph.facebook.com/v19.0/${BUSINESS_PHONE_NUMBER_ID}`;
 
 const AxiosInstanceWhatsapp = axios.create({
@@ -174,4 +179,44 @@ export const markChatAsRead = async (messageId: string) => {
       message_id: messageId,
     },
   });
+};
+
+// helpers
+export const _markChatAsRead = async (messageId: string) => {
+  try {
+    await markChatAsRead(messageId);
+  } catch (error) {
+    console.error("Error markChatAsRead: " + error);
+    console.error((error as AxiosError)?.response?.data);
+  }
+};
+
+export const _queryAndReply = async (payloadString: string) => {
+  const payload = JSON.parse(payloadString);
+  const { query, messageFrom } = payload;
+  let chatbotReply = null;
+
+  try {
+    if (CONNECTION_PLATFORM === DIFY) {
+      chatbotReply = await queryToDify({ waId: messageFrom, query });
+    } else if (CONNECTION_PLATFORM === RASA) {
+      chatbotReply = await queryToRasa({ waId: messageFrom, query });
+    }
+    console.log("[Chatbot reply]: ", chatbotReply);
+  } catch (error) {
+    console.error("Error queryToPlatform: " + error);
+    console.error((error as AxiosError)?.response?.data);
+  }
+
+  if (!chatbotReply || !chatbotReply.text) {
+    // do nothing
+    return;
+  }
+
+  try {
+    await sendChatbotReply({ to: messageFrom, chatbotReply });
+  } catch (error) {
+    console.error("Error sendChatbotReply: " + error);
+    console.error((error as AxiosError)?.response?.data);
+  }
 };

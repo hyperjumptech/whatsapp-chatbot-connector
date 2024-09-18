@@ -1,8 +1,8 @@
 import express from "express";
 import dotenv from "dotenv";
-import { markChatAsRead, sendChatbotReply } from "../services/whatsapp";
-import { queryToDify } from "../services/dify";
-import { queryToRasa } from "../services/rasa";
+import { Queue } from "bullmq";
+import { config } from "../utils/config";
+import { _markChatAsRead, _queryAndReply } from "../services/whatsapp";
 
 dotenv.config();
 
@@ -10,11 +10,19 @@ const webhookRoutes = express.Router();
 
 const { WEBHOOK_VERIFY_TOKEN, CONNECTION_PLATFORM, SESSION_DATABASE } =
   process.env;
-const DIFY = "dify";
-const RASA = "rasa";
 
 console.log("CONNECTION_PLATFORM: ", CONNECTION_PLATFORM);
 console.log("SESSION_DATABASE: ", SESSION_DATABASE);
+
+let myQueue = null;
+if (SESSION_DATABASE === "redis") {
+  myQueue = new Queue("messages", {
+    connection: {
+      host: config.REDIS_HOST,
+      port: config.REDIS_PORT,
+    },
+  });
+}
 
 // accepts GET requests at the /webhook endpoint. You need this URL to setup webhook initially.
 // info on verification request payload: https://developers.facebook.com/docs/graph-api/webhooks/getting-started#verification-requests
@@ -43,10 +51,17 @@ webhookRoutes.post("/", async (req, res) => {
     // log incoming status
     const status = req.body.entry?.[0]?.changes[0]?.value?.statuses?.[0];
     console.log(
-      `[Incoming webhook status] phone:${status?.recipient_id} - entry.id:${req.body.entry?.[0]?.id} - status: ${status?.status}`
+      `[Incoming webhook status] phone: ${status?.recipient_id} - status: ${status?.status}`
     );
+    if (status?.status === "failed") {
+      console.log(JSON.stringify(status?.errors));
+    }
+
     if (!status?.recipient_id) {
-      console.log("Incoming webhook message:", JSON.stringify(req.body));
+      console.log(
+        "Incoming webhook without recipient:",
+        JSON.stringify(req.body)
+      );
     }
     res.sendStatus(200);
     return;
@@ -54,19 +69,29 @@ webhookRoutes.post("/", async (req, res) => {
 
   // log incoming messages
   console.log(
-    `[Incoming webhook message] phone:${message.from} - entry.id:${req.body.entry?.[0]?.id} - text-body: ${message.text?.body} - message-type: ${message.type} - interactive-type: ${message.interactive?.type}`
+    `[Incoming webhook message] phone: ${message.from} - text-body: ${
+      message.text?.body
+    } - message-type: ${message.type} - interactive-type: ${
+      message.interactive?.type || "-"
+    }`
   );
 
   // aknowledge that the message has been read and be processed
-  try {
-    await markChatAsRead(message.id);
-  } catch (error) {
-    console.error("Error markChatAsRead: " + error);
+  if (SESSION_DATABASE === "redis") {
+    try {
+      const job = await myQueue?.add("markChatAsRead", message.id);
+      console.log(
+        `[markChatAsRead] Job added successfully with ID: ${job?.id}`
+      );
+    } catch (error) {
+      console.error("[markChatAsRead] Error adding job:", error);
+    }
+  } else {
+    await _markChatAsRead(message.id);
   }
 
-  let chatbotReply = null;
+  // get the query text by message.type
   let queryText = "";
-
   switch (message.type) {
     case "interactive":
       if (message.interactive.type === "button_reply") {
@@ -87,22 +112,21 @@ webhookRoutes.post("/", async (req, res) => {
     return;
   }
 
-  if (CONNECTION_PLATFORM === DIFY) {
-    chatbotReply = await queryToDify({ req, query: queryText });
-  } else if (CONNECTION_PLATFORM === RASA) {
-    chatbotReply = await queryToRasa({ req, query: queryText });
-  }
-  console.log("[Chatbot reply]: ", chatbotReply);
+  // process the query and send reply
+  const payload = JSON.stringify({
+    query: queryText,
+    messageFrom: message.from,
+  });
 
-  if (!chatbotReply || !chatbotReply.text) {
-    res.sendStatus(200);
-    return;
-  }
-
-  try {
-    await sendChatbotReply({ to: message.from, chatbotReply });
-  } catch (error) {
-    console.error("Error sendChatbotReply: " + error);
+  if (SESSION_DATABASE === "redis") {
+    try {
+      const job = await myQueue?.add("queryAndReply", payload);
+      console.log(`[queryAndReply] Job added successfully with ID: ${job?.id}`);
+    } catch (error) {
+      console.error("[queryAndReply] Error adding job:", error);
+    }
+  } else {
+    await _queryAndReply(payload);
   }
 
   res.sendStatus(200);
