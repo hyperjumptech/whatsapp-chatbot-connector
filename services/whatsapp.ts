@@ -2,12 +2,13 @@ import axios, { AxiosError } from "axios";
 import dotenv from "dotenv";
 import { queryToDify } from "./dify";
 import { queryToRasa } from "./rasa";
+import { config } from "../utils/config";
 
 dotenv.config();
 const DIFY = "dify";
 const RASA = "rasa";
 const { GRAPH_API_TOKEN, BUSINESS_PHONE_NUMBER_ID, CONNECTION_PLATFORM } =
-  process.env;
+  config;
 const BASE_URL = `https://graph.facebook.com/v19.0/${BUSINESS_PHONE_NUMBER_ID}`;
 
 const AxiosInstanceWhatsapp = axios.create({
