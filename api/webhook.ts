@@ -76,20 +76,6 @@ webhookRoutes.post("/", async (req, res) => {
     }`
   );
 
-  // aknowledge that the message has been read and be processed
-  if (SESSION_DATABASE === "redis") {
-    try {
-      const job = await myQueue?.add("markChatAsRead", message.id);
-      console.log(
-        `[markChatAsRead] Job added successfully with ID: ${job?.id}`
-      );
-    } catch (error) {
-      console.error("[markChatAsRead] Error adding job:", error);
-    }
-  } else {
-    await _markChatAsRead(message.id);
-  }
-
   // get the query text by message.type
   let queryText = "";
   switch (message.type) {
@@ -103,13 +89,27 @@ webhookRoutes.post("/", async (req, res) => {
       }
       break;
     default:
-      queryText = message.text.body;
+      queryText = message?.text?.body;
       break;
   }
 
   if (!queryText) {
     res.sendStatus(200);
     return;
+  }
+
+  // aknowledge that the message has been read and be processed
+  if (SESSION_DATABASE === "redis") {
+    try {
+      const job = await myQueue?.add("markChatAsRead", message.id);
+      console.log(
+        `[markChatAsRead] Job added successfully with ID: ${job?.id}`
+      );
+    } catch (error) {
+      console.error("[markChatAsRead] Error adding job:", error);
+    }
+  } else {
+    await _markChatAsRead(message.id);
   }
 
   // process the query and send reply
