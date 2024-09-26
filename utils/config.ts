@@ -14,7 +14,7 @@ const schema = z
     BUSINESS_PHONE_NUMBER_ID: z.string().default(""),
     CONNECTION_PLATFORM: z.enum(["dify", "rasa"]).default("dify"),
     DIFY_BASE_URL: z.string().default("https://api.dify.ai/v1"),
-    DIFY_API_KEY: z.string().default(""),
+    DIFY_API_KEY: z.string(),
     DIFY_TIMEOUT: z.number().default(30_000),
     RASA_BASE_URL: z
       .string()
