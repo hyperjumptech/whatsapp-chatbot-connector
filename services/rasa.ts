@@ -1,13 +1,14 @@
 import axios from "axios";
 import dotenv from "dotenv";
+import { config } from "../utils/config";
 
 dotenv.config();
 
-const { RASA_BASE_URL } = process.env;
+const { RASA_BASE_URL, RASA_TIMEOUT } = config;
 
 const AxiosInstanceDify = axios.create({
   baseURL: RASA_BASE_URL,
-  timeout: 20_000, // 20 seconds,
+  timeout: RASA_TIMEOUT,
   timeoutErrorMessage: "Connection timed out",
 });
 

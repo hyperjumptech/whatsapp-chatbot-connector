@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "test": "jest --coverage",
+    "test": "cp .env.example .env && jest --coverage",
     "dev": "ts-node index.ts",
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc",

@@ -13,6 +13,14 @@ const schema = z
     GRAPH_API_TOKEN: z.string().default(""),
     BUSINESS_PHONE_NUMBER_ID: z.string().default(""),
     CONNECTION_PLATFORM: z.enum(["dify", "rasa"]).default("dify"),
+    DIFY_BASE_URL: z.string().default("https://api.dify.ai/v1"),
+    DIFY_API_KEY: z.string(),
+    DIFY_TIMEOUT: z.coerce.number().default(30_000),
+    RASA_BASE_URL: z
+      .string()
+      .default("http://localhost:5005/webhooks/rest/webhook"),
+    RASA_TIMEOUT: z.coerce.number().default(30_000),
+    WA_TIMEOUT: z.coerce.number().default(30_000),
   })
   .transform((env) => {
     const redisUrl = new URL(env.REDIS_URL);
