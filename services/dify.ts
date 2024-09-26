@@ -1,15 +1,15 @@
 import axios from "axios";
 import dotenv from "dotenv";
 import { getSession, setSession } from "./session";
+import { config } from "../utils/config";
 
 dotenv.config();
 
-const { DIFY_API_KEY, DIFY_BASE_URL } = process.env;
-const BASE_URL = DIFY_BASE_URL || `https://api.dify.ai/v1`;
+const { DIFY_API_KEY, DIFY_BASE_URL, DIFY_TIMEOUT } = config;
 
 const AxiosInstanceDify = axios.create({
-  baseURL: BASE_URL,
-  timeout: 30_000, // 20 seconds,
+  baseURL: DIFY_BASE_URL,
+  timeout: DIFY_TIMEOUT,
   timeoutErrorMessage: "Connection timed out",
 });
 
@@ -24,7 +24,7 @@ export const sendQuery = async ({
 }) => {
   return await AxiosInstanceDify({
     method: "POST",
-    url: `${BASE_URL}/chat-messages`,
+    url: `${DIFY_BASE_URL}/chat-messages`,
     headers: {
       Authorization: `Bearer ${DIFY_API_KEY}`,
     },

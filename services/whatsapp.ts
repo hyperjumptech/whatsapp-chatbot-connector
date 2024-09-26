@@ -5,15 +5,22 @@ import { queryToRasa } from "./rasa";
 import { config } from "../utils/config";
 
 dotenv.config();
+
 const DIFY = "dify";
 const RASA = "rasa";
-const { GRAPH_API_TOKEN, BUSINESS_PHONE_NUMBER_ID, CONNECTION_PLATFORM } =
-  config;
+
+const {
+  GRAPH_API_TOKEN,
+  BUSINESS_PHONE_NUMBER_ID,
+  CONNECTION_PLATFORM,
+  WA_TIMEOUT,
+} = config;
+
 const BASE_URL = `https://graph.facebook.com/v19.0/${BUSINESS_PHONE_NUMBER_ID}`;
 
 const AxiosInstanceWhatsapp = axios.create({
   baseURL: BASE_URL,
-  timeout: 30_000, // 20 seconds,
+  timeout: WA_TIMEOUT,
   timeoutErrorMessage: "Connection timed out",
 });
 
