@@ -9,7 +9,7 @@ const BASE_URL = DIFY_BASE_URL || `https://api.dify.ai/v1`;
 
 const AxiosInstanceDify = axios.create({
   baseURL: BASE_URL,
-  timeout: 20_000, // 20 seconds,
+  timeout: 30_000, // 20 seconds,
   timeoutErrorMessage: "Connection timed out",
 });
 

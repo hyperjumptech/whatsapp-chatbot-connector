@@ -7,7 +7,7 @@ const { RASA_BASE_URL } = process.env;
 
 const AxiosInstanceDify = axios.create({
   baseURL: RASA_BASE_URL,
-  timeout: 20_000, // 20 seconds,
+  timeout: 30_000, // 20 seconds,
   timeoutErrorMessage: "Connection timed out",
 });
 

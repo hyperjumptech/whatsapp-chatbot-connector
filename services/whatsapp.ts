@@ -13,7 +13,7 @@ const BASE_URL = `https://graph.facebook.com/v19.0/${BUSINESS_PHONE_NUMBER_ID}`;
 
 const AxiosInstanceWhatsapp = axios.create({
   baseURL: BASE_URL,
-  timeout: 20_000, // 20 seconds,
+  timeout: 30_000, // 20 seconds,
   timeoutErrorMessage: "Connection timed out",
 });
 
