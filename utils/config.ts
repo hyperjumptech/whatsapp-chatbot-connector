@@ -15,12 +15,12 @@ const schema = z
     CONNECTION_PLATFORM: z.enum(["dify", "rasa"]).default("dify"),
     DIFY_BASE_URL: z.string().default("https://api.dify.ai/v1"),
     DIFY_API_KEY: z.string(),
-    DIFY_TIMEOUT: z.number().default(30_000),
+    DIFY_TIMEOUT: z.coerce.number().default(30_000),
     RASA_BASE_URL: z
       .string()
       .default("http://localhost:5005/webhooks/rest/webhook"),
-    RASA_TIMEOUT: z.number().default(30_000),
-    WA_TIMEOUT: z.number().default(30_000),
+    RASA_TIMEOUT: z.coerce.number().default(30_000),
+    WA_TIMEOUT: z.coerce.number().default(30_000),
   })
   .transform((env) => {
     const redisUrl = new URL(env.REDIS_URL);
