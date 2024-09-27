@@ -209,7 +209,7 @@ export const _queryAndReply = async (payloadString: string) => {
     } else if (CONNECTION_PLATFORM === RASA) {
       chatbotReply = await queryToRasa({ waId: messageFrom, query });
     }
-    console.log(`[Chatbot reply] phone: ${messageFrom} `, chatbotReply);
+    console.log("[Chatbot reply] phone: %s", messageFrom, chatbotReply);
   } catch (error) {
     console.error("Error queryToPlatform: " + error);
     console.error((error as AxiosError)?.response?.data);
