@@ -69,11 +69,7 @@ webhookRoutes.post("/", async (req, res) => {
 
   // log incoming messages
   console.log(
-    `[Incoming webhook message] phone: ${message.from} - text-body: ${
-      message.text?.body
-    } - message-type: ${message.type} - interactive-type: ${
-      message.interactive?.type || "-"
-    }`
+    `[Incoming webhook message] phone: ${message.from} - text-body: ${message.text?.body}`
   );
 
   // get the query text by message.type
