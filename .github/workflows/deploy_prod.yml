@@ -1,10 +1,10 @@
-name: Build and Deploy Staging
+name: Build and Deploy Prod
 
 on: # todo: deploy is tag triggered
   workflow_dispatch:
   workflow_run:
     workflows:
-      - "Build and Test"
+      - "Build and Deploy"
     branches: [main]
     types:
       - "completed"
@@ -16,17 +16,6 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20.x
-      - run: npm ci
-      - run: npm run build
-
   docker:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
@@ -34,10 +23,10 @@ jobs:
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
         with:
-          key: ${{ secrets.SSH_KEY }}
-          name: id_rsa
-          known_hosts: ${{ secrets.KNOWN_HOSTS }}
-          config: ${{ secrets.CONFIG }} # ssh_config; optional
+          key: ${{ secrets.SSH_KEY_PROD }}
+          name: id_prod_key
+          known_hosts: ${{ secrets.KNOWN_HOSTS_PROD }}
+          config: ${{ secrets.CONFIG_PROD }} # ssh_config; optional
           if_key_exists: fail # replace / ignore / fail; optional (defaults to fail)
 
       - name: Set up QEMU
@@ -58,6 +47,6 @@ jobs:
         # 2. recreate container
         # 3. cleanup images
         run: |
-          docker save wa-connector:latest | ssh target docker load          
-          ssh target docker compose up -d
-          ssh target docker image prune -f
+          docker save wa-connector:latest | ssh prod docker load          
+          ssh prod docker compose up -d
+          ssh prod docker image prune -f
