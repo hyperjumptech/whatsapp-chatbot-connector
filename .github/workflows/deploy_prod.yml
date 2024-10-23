@@ -24,7 +24,7 @@ jobs:
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SSH_KEY_PROD }}
-          name: id_rsa
+          name: id_prod_key
           known_hosts: ${{ secrets.KNOWN_HOSTS_PROD }}
           config: ${{ secrets.CONFIG_PROD }} # ssh_config; optional
           if_key_exists: fail # replace / ignore / fail; optional (defaults to fail)
