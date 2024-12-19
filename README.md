@@ -27,7 +27,7 @@ npm (v10.x or later)
 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/whatsapp-chatbot-connector.git
+git clone https://github.com/hyperjumptech/whatsapp-chatbot-connector.git
 cd whatsapp-chatbot-connector
 ```
 
@@ -67,7 +67,9 @@ npm run dev
 
 In the WhatsApp Business API, go to the **Configuration** menu and fine the **Callback URL**. Detail on the [picture below](#whatsapp-business-api-configuration), poin **number 7**
 
-If you are running on local, you can use [ngrok](https://ngrok.com/docs/getting-started/) to get a public URL for your local server.
+> Note that the url must use https
+
+So if you are running on local, you can use [ngrok](https://ngrok.com/docs/getting-started/) to get a public URL with https for your local server.
 
 6. Send text message to the WhatsApp Business API
 
@@ -88,7 +90,7 @@ docker compose up -d
 | Variable Name            | Description                                                                                                                                          | Example                                     |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
 | NODE_ENV                 | Environment variable to set the node environment.                                                                                                    | development                                 |
-| WEBHOOK_VERIFY_TOKEN     | Webhook verification token. The value should be the same as the one you set in the WhatsApp Business API. Detail in picture below, poin **number 2** |
+| WEBHOOK_VERIFY_TOKEN     | Webhook verification token. The value should be the same as the one you set in the WhatsApp Business API. Detail in picture below, poin **number 3** |
 | GRAPH_API_TOKEN          | Graph API token. The value should be the same as the one you set in the WhatsApp Business API. Detail in picture below, poin **number 5**            | abacdefghijk                                |
 | BUSINESS_PHONE_NUMBER_ID | Business phone number ID. The value should be obtained from WhatsApp Business API. Detail in picture below, poin **number 6**                        | 12345678912323                              |
 | DIFY_BASE_URL            | Dify base URL.                                                                                                                                       | https://api.dify.ai/v1                      |
@@ -163,7 +165,7 @@ Use `Dockerfile` and `docker-compose.yml` file in the root folder.
 1. Build docker image
 
 ```
-docker build -f Dockerfile
+docker build -t wa-connector
 ```
 
 2. Run the docker
