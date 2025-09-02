@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import { Queue } from "bullmq";
 import { config } from "../utils/config";
 import { _markChatAsRead, _queryAndReply } from "../services/whatsapp";
+import escapeHtml from "escape-html";
 
 dotenv.config();
 
@@ -34,7 +35,7 @@ webhookRoutes.get("/", (req, res) => {
   // check the mode and token sent are correct
   if (mode === "subscribe" && token === WEBHOOK_VERIFY_TOKEN) {
     // respond with 200 OK and challenge token from the request
-    res.status(200).send(challenge);
+    res.status(200).send(escapeHtml(challenge));
   } else {
     // respond with '403 Forbidden' if verify tokens do not match
     res.sendStatus(403);
