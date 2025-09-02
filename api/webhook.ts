@@ -54,7 +54,7 @@ webhookRoutes.post("/", async (req, res) => {
       `[Incoming webhook status] phone: ${status?.recipient_id} - status: ${status?.status}`
     );
     if (status?.status === "failed") {
-      console.log(JSON.stringify(status?.errors));
+      console.log(JSON.stringify(status));
     }
 
     if (!status?.recipient_id) {
