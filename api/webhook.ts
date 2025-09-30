@@ -36,10 +36,7 @@ function verifyWebhookSignature(payload: string, signature: string): boolean {
   const appSecret = process.env.WEBHOOK_APP_SECRET || config.WEBHOOK_APP_SECRET;
 
   if (!appSecret) {
-    console.warn(
-      "WEBHOOK_APP_SECRET not configured, skipping signature verification"
-    );
-    return true; // Allow requests when app secret is not configured
+    return false;
   }
 
   if (!signature) {
@@ -68,6 +65,11 @@ function validateWebhookHeaders(req: express.Request & { rawBody?: string }): {
   isValid: boolean;
   error?: string;
 } {
+  // Skip validation when needed e.g. in development
+  if (process.env.WEBHOOK_HEADER_VALIDATION === "false") {
+    return { isValid: true };
+  }
+
   // Check Content-Type
   const contentType = req.get("content-type");
   if (!contentType || !contentType.includes("application/json")) {
@@ -83,11 +85,6 @@ function validateWebhookHeaders(req: express.Request & { rawBody?: string }): {
     console.warn(`Unexpected User-Agent: ${userAgent}`);
   }
 
-  // Skip validation in development environment
-  if (process.env.WEBHOOK_HEADER_VALIDATION === "false") {
-    return { isValid: true };
-  }
-
   // Verify webhook signature if app secret is configured
   const signature = req.get("x-hub-signature-256");
   if (!signature) {
@@ -97,7 +94,7 @@ function validateWebhookHeaders(req: express.Request & { rawBody?: string }): {
     };
   }
 
-  const rawBody = JSON.stringify(req.body);
+  const rawBody = req.rawBody || JSON.stringify(req.body);
   if (!rawBody) {
     return {
       isValid: false,
