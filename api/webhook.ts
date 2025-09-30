@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import crypto from "crypto";
 import { Queue } from "bullmq";
 import { config } from "../utils/config";
 import { _markChatAsRead, _queryAndReply } from "../services/whatsapp";
@@ -24,6 +25,87 @@ if (SESSION_DATABASE === "redis") {
   });
 }
 
+/**
+ * Verify the webhook signature using WhatsApp's app secret
+ * @param payload - Raw request body as string
+ * @param signature - X-Hub-Signature-256 header value
+ * @returns boolean indicating if signature is valid
+ */
+function verifyWebhookSignature(payload: string, signature: string): boolean {
+  // Check for app secret in environment or config
+  const appSecret = process.env.WEBHOOK_APP_SECRET || config.WEBHOOK_APP_SECRET;
+
+  if (!appSecret) {
+    return false;
+  }
+
+  if (!signature) {
+    return false;
+  }
+
+  // Remove 'sha256=' prefix if present
+  const cleanSignature = signature.replace(/^sha256=/, "");
+
+  // Create expected signature
+  const expectedSignature = crypto
+    .createHmac("sha256", appSecret)
+    .update(payload, "utf8")
+    .digest("hex");
+
+  // Use string comparison for signature validation
+  return cleanSignature === expectedSignature;
+}
+
+/**
+ * Validate request headers for WhatsApp webhook
+ * @param req - Express request object
+ * @returns object with validation result and error message if invalid
+ */
+function validateWebhookHeaders(req: express.Request & { rawBody?: string }): {
+  isValid: boolean;
+  error?: string;
+} {
+  // Skip validation when needed e.g. in development
+  if (process.env.WEBHOOK_HEADER_VALIDATION === "false") {
+    return { isValid: true };
+  }
+
+  // Check Content-Type
+  const contentType = req.get("content-type");
+  if (!contentType || !contentType.includes("application/json")) {
+    return {
+      isValid: false,
+      error: "Invalid Content-Type. Expected application/json",
+    };
+  }
+
+  // Verify webhook signature if app secret is configured
+  const signature = req.get("x-hub-signature-256");
+  if (!signature) {
+    return {
+      isValid: false,
+      error: "Missing webhook signature",
+    };
+  }
+
+  const rawBody = req.rawBody || JSON.stringify(req.body);
+  if (!rawBody) {
+    return {
+      isValid: false,
+      error: "Missing webhook payload",
+    };
+  }
+
+  if (!verifyWebhookSignature(rawBody, signature)) {
+    return {
+      isValid: false,
+      error: "Invalid webhook signature",
+    };
+  }
+
+  return { isValid: true };
+}
+
 // accepts GET requests at the /webhook endpoint. You need this URL to setup webhook initially.
 // info on verification request payload: https://developers.facebook.com/docs/graph-api/webhooks/getting-started#verification-requests
 webhookRoutes.get("/", (req, res) => {
@@ -42,6 +124,18 @@ webhookRoutes.get("/", (req, res) => {
 });
 
 webhookRoutes.post("/", async (req, res) => {
+  // Validate webhook headers and signature
+  const headerValidation = validateWebhookHeaders(req);
+  if (!headerValidation.isValid) {
+    console.error(
+      `[Webhook] Header validation failed: ${headerValidation.error}`
+    );
+    return res.status(403).json({
+      error: "Forbidden",
+      message: headerValidation.error,
+    });
+  }
+
   // check if the webhook request contains a message
   // details on WhatsApp text message payload: https://developers.facebook.com/docs/whatsapp/cloud-api/webhooks/payload-examples#text-messages
   const message = req.body.entry?.[0]?.changes[0]?.value?.messages?.[0];
@@ -69,7 +163,11 @@ webhookRoutes.post("/", async (req, res) => {
 
   // log incoming messages
   console.log(
-    `[Incoming webhook message] phone: ${message.from} - text-body: ${message.text?.body} - message-type: ${message.type}`
+    `[Incoming webhook message] phone: ${
+      message.from
+    } - text-body: ${JSON.stringify(message.text?.body)} - message-type: ${
+      message.type
+    }`
   );
 
   // get the query text by message.type
