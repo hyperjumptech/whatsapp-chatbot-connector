@@ -70,7 +70,7 @@ describe("Webhook header validation", () => {
     expect(response.statusCode).toBe(200);
   });
 
-  test("should accept request without signature when app secret is not configured", async () => {
+  test("should reject request without signature when app secret is not configured", async () => {
     delete process.env.WEBHOOK_APP_SECRET;
 
     const response = await request(appTest)
@@ -78,7 +78,7 @@ describe("Webhook header validation", () => {
       .set("Content-Type", "application/json")
       .send(validPayload);
 
-    expect(response.statusCode).toBe(200);
+    expect(response.statusCode).toBe(403);
   });
 
   afterEach(() => {

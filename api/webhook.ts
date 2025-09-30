@@ -83,11 +83,29 @@ function validateWebhookHeaders(req: express.Request & { rawBody?: string }): {
     console.warn(`Unexpected User-Agent: ${userAgent}`);
   }
 
+  // Skip validation in development environment
+  if (process.env.NODE_ENV === "development") {
+    return { isValid: true };
+  }
+
   // Verify webhook signature if app secret is configured
   const signature = req.get("x-hub-signature-256");
-  const rawBody = req.rawBody || JSON.stringify(req.body);
+  if (!signature) {
+    return {
+      isValid: false,
+      error: "Missing webhook signature",
+    };
+  }
 
-  if (!verifyWebhookSignature(rawBody, signature || "")) {
+  const rawBody = JSON.stringify(req.body);
+  if (!rawBody) {
+    return {
+      isValid: false,
+      error: "Missing webhook payload",
+    };
+  }
+
+  if (!verifyWebhookSignature(rawBody, signature)) {
     return {
       isValid: false,
       error: "Invalid webhook signature",
