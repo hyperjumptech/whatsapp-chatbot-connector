@@ -75,7 +75,7 @@ export const sendTextMessage = async ({
         messaging_product: "whatsapp",
         to,
         type: "text",
-        text: { preview_url: true, body: text },
+        text: { preview_url: false, body: text },
       },
     });
   } catch (error: unknown) {
