@@ -84,7 +84,7 @@ function validateWebhookHeaders(req: express.Request & { rawBody?: string }): {
   }
 
   // Skip validation in development environment
-  if (process.env.NODE_ENV === "development") {
+  if (process.env.WEBHOOK_HEADER_VALIDATION === "false") {
     return { isValid: true };
   }
 
