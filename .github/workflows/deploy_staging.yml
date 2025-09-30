@@ -1,13 +1,10 @@
 name: Build and Deploy Staging
 
-on: # todo: deploy is tag triggered
+on: 
   workflow_dispatch:
-  workflow_run:
-    workflows:
-      - "Build and Test"
-    branches: [main]
-    types:
-      - "completed"
+  push:
+    branches: 
+      - main
 
 permissions:
   issues: read
@@ -35,7 +32,7 @@ jobs:
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SSH_KEY }}
-          name: id_rsa
+          name: id_staging_key
           known_hosts: ${{ secrets.KNOWN_HOSTS }}
           config: ${{ secrets.CONFIG }} # ssh_config; optional
           if_key_exists: fail # replace / ignore / fail; optional (defaults to fail)
@@ -58,6 +55,6 @@ jobs:
         # 2. recreate container
         # 3. cleanup images
         run: |
-          docker save wa-connector:latest | ssh target docker load          
-          ssh target docker compose up -d
-          ssh target docker image prune -f
+          docker save wa-connector:latest | ssh staging docker load          
+          ssh staging docker compose up -d
+          ssh staging docker image prune -f
