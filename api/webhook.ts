@@ -79,12 +79,6 @@ function validateWebhookHeaders(req: express.Request & { rawBody?: string }): {
     };
   }
 
-  // Check User-Agent for WhatsApp requests (optional but recommended)
-  const userAgent = req.get("user-agent");
-  if (userAgent && !userAgent.includes("WhatsApp")) {
-    console.warn(`Unexpected User-Agent: ${userAgent}`);
-  }
-
   // Verify webhook signature if app secret is configured
   const signature = req.get("x-hub-signature-256");
   if (!signature) {
