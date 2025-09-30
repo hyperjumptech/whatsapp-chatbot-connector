@@ -12,6 +12,7 @@ const schema = z
     REDIS_URL: z.string().default("redis://localhost:6379"),
     GRAPH_API_TOKEN: z.string().default(""),
     BUSINESS_PHONE_NUMBER_ID: z.string().default(""),
+    WEBHOOK_APP_SECRET: z.string().default(""),
     CONNECTION_PLATFORM: z.enum(["dify", "rasa"]).default("dify"),
     DIFY_BASE_URL: z.string().default("https://api.dify.ai/v1"),
     DIFY_API_KEY: z.string(),

@@ -87,18 +87,19 @@ docker compose up -d
 
 ## Environment Variables
 
-| Variable Name            | Description                                                                                                                                          | Example                                     |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| NODE_ENV                 | Environment variable to set the node environment.                                                                                                    | development                                 |
-| WEBHOOK_VERIFY_TOKEN     | Webhook verification token. The value should be the same as the one you set in the WhatsApp Business API. Detail in picture below, poin **number 3** |
-| GRAPH_API_TOKEN          | Graph API token. The value should be the same as the one you set in the WhatsApp Business API. Detail in picture below, poin **number 5**            | abacdefghijk                                |
-| BUSINESS_PHONE_NUMBER_ID | Business phone number ID. The value should be obtained from WhatsApp Business API. Detail in picture below, poin **number 6**                        | 12345678912323                              |
-| DIFY_BASE_URL            | Dify base URL.                                                                                                                                       | https://api.dify.ai/v1                      |
-| DIFY_API_KEY             | Dify API key.                                                                                                                                        | app-Jdasdsdsd98n98787y                      |
-| RASA_BASE_URL            | Rasa base URL.                                                                                                                                       | http://localhost:5005/webhooks/rest/webhook |
-| CONNECTION_PLATFORM      | Platform to connect to. value should be `dify` or `rasa`                                                                                             | dify                                        |
-| SESSION_DATABASE         | Database to store session. value should be `in-memory` or `redis`                                                                                    | in-memory                                   |
-| REDIS_URL                | Redis URL. Required if `SESSION_DATABASE` is set to `redis`                                                                                          | redis://localhost:6379                      |
+| Variable Name            | Description                                                                                                                                           | Example                                     |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| NODE_ENV                 | Environment variable to set the node environment.                                                                                                     | development                                 |
+| WEBHOOK_VERIFY_TOKEN     | Webhook verification token. The value should be the same as the one you set in the WhatsApp Business API. Detail in picture below, poin **number 3**  |
+| WEBHOOK_APP_SECRET       | WhatsApp App Secret for webhook signature verification. Optional but recommended for security. Get this from your WhatsApp Business API app settings. | your_app_secret_here                        |
+| GRAPH_API_TOKEN          | Graph API token. The value should be the same as the one you set in the WhatsApp Business API. Detail in picture below, poin **number 5**             | abacdefghijk                                |
+| BUSINESS_PHONE_NUMBER_ID | Business phone number ID. The value should be obtained from WhatsApp Business API. Detail in picture below, poin **number 6**                         | 12345678912323                              |
+| DIFY_BASE_URL            | Dify base URL.                                                                                                                                        | https://api.dify.ai/v1                      |
+| DIFY_API_KEY             | Dify API key.                                                                                                                                         | app-Jdasdsdsd98n98787y                      |
+| RASA_BASE_URL            | Rasa base URL.                                                                                                                                        | http://localhost:5005/webhooks/rest/webhook |
+| CONNECTION_PLATFORM      | Platform to connect to. value should be `dify` or `rasa`                                                                                              | dify                                        |
+| SESSION_DATABASE         | Database to store session. value should be `in-memory` or `redis`                                                                                     | in-memory                                   |
+| REDIS_URL                | Redis URL. Required if `SESSION_DATABASE` is set to `redis`                                                                                           | redis://localhost:6379                      |
 
 ## WhatsApp Business API Configuration
 
