@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { Queue } from "bullmq";
 import { config } from "../utils/config";
 import { _markChatAsRead, _queryAndReply } from "../services/whatsapp";
+import { forwardWebhook } from "../services/bridge";
 
 dotenv.config();
 
@@ -133,6 +134,13 @@ webhookRoutes.post("/", async (req, res) => {
     return res.status(403).json({
       error: "Forbidden",
       message: headerValidation.error,
+    });
+  }
+
+  // Forward raw body to bridge URL if enabled
+  if (config.BRIDGE_ENABLED) {
+    forwardWebhook(req.body).catch((error) => {
+      console.error("[Webhook] Bridge forward error:", error);
     });
   }
 
