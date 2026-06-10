@@ -22,6 +22,12 @@ const schema = z
       .default("http://localhost:5005/webhooks/rest/webhook"),
     RASA_TIMEOUT: z.coerce.number().default(30_000),
     WA_TIMEOUT: z.coerce.number().default(30_000),
+    BRIDGE_ENABLED: z.coerce.boolean().default(false),
+    BRIDGE_URL: z.string().default(""),
+    BRIDGE_TIMEOUT: z.coerce.number().default(10_000),
+    BRIDGE_HEADERS: z
+      .record(z.string())
+      .default({}),
   })
   .transform((env) => {
     const redisUrl = new URL(env.REDIS_URL);
