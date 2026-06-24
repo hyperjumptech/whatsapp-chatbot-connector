@@ -1,0 +1,62 @@
+name: Build and Deploy Prod
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "Build and Deploy"
+    branches: [main]
+    types:
+      - "completed"
+
+permissions:
+  contents: read
+
+env:
+  IMAGE_NAME: wa-connector
+  DEPLOY_HOST: prod
+
+jobs:
+  docker:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install SSH key proxy
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.BZNET_SSH_PROD_PROXY }}
+          name: id_proxy
+          known_hosts: ${{ secrets.BZNET_KNOWN_HOSTS_PROD_PROXY }}
+          config: ${{ secrets.BZNET_CONFIG_PROD }}
+          if_key_exists: fail
+
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.BZNET_SSH_KEY_PROD }}
+          name: id_prod
+          known_hosts: ${{ secrets.BZNET_KNOWN_HOSTS_PROD }}
+          config: ${{ secrets.BZNET_CONFIG_PROD }}
+          if_key_exists: fail
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          load: true
+          push: false
+          tags: ${{ env.IMAGE_NAME }}:latest,${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: push image and restart services
+        run: |
+          docker save $IMAGE_NAME:latest | ssh $DEPLOY_HOST docker load
+          ssh $DEPLOY_HOST docker compose up -f ~/services/wa-connector/compose.yaml -d $IMAGE_NAME
+          ssh $DEPLOY_HOST docker image prune -f
