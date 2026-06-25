@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   workflow_run:
     workflows:
-      - "Build and Deploy"
+      - "Code Quality"
     branches: [main]
     types:
       - "completed"
@@ -20,6 +20,7 @@ jobs:
   docker:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -54,9 +55,11 @@ jobs:
           load: true
           push: false
           tags: ${{ env.IMAGE_NAME }}:latest,${{ env.IMAGE_NAME }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: push image and restart services
         run: |
-          docker save $IMAGE_NAME:latest | ssh $DEPLOY_HOST docker load
-          ssh $DEPLOY_HOST docker compose up -f ~/services/wa-connector/compose.yaml -d $IMAGE_NAME
+          docker save $IMAGE_NAME:latest | gzip | ssh $DEPLOY_HOST "gunzip | docker load"
+          ssh $DEPLOY_HOST "cd ~/services/wa-connector && docker compose up -d $IMAGE_NAME"
           ssh $DEPLOY_HOST docker image prune -f
